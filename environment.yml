@@ -1,0 +1,13 @@
+name: vizard
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python
+  - pandas
+  - numpy
+  - matplotlib
+  - plotly
+  - seaborn
+  - IPython
+  - beautifulsoup4    
