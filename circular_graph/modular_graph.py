@@ -1,8 +1,8 @@
 from xml.etree import ElementTree as ET2
 import math
 import json as json2
-from color_tools.color_conversion import value_to_color
-from color_tools.gradient import create_gradient_html
+from circular_graph.color_tools.color_conversion import value_to_color
+from circular_graph.color_tools.gradient import create_gradient_html
 
 
 # __________________________________________________________________________________#
