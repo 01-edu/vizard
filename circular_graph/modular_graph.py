@@ -3,7 +3,7 @@ import math
 import json as json2
 from circular_graph.color_tools.color_conversion import value_to_color
 from circular_graph.color_tools.gradient import create_gradient_html
-
+from IPython.display import display, HTML
 
 # __________________________________________________________________________________#
 #|                                                                                  |#
@@ -998,13 +998,13 @@ class modular_graph:
         filter.append(self.create_element("feflood", {"flood-opacity":"0","result":"BackgroundImageFix"}))
         filter.append(self.create_element("feblend", {"in":"SourceGraphic", "in2":"BackgroundImageFix", "mode":"normal", "result":"shape"}))
         filter.append(self.create_element("fegaussianblur",{"result":"effect1_foregroundBlur_1_272", "stddeviation":"8.5"}))
-
-        
         return root, ET2.tostring(root, encoding="unicode")
+
+###############################################################################################################################
+###############################################################################################################################
     # component rendering gradient legend
     def display_gradient(self, start_color_hex, mid_color_hex, end_color_hex, min_val, max_val):
         """
-        !must be fixed
             Display a gradient legend .
 
             Variables:
@@ -1015,4 +1015,16 @@ class modular_graph:
                 max_val (int or float): Maximum value for the gradient scale.
         """
         create_gradient_html(start_color_hex, mid_color_hex, end_color_hex, min_val, max_val)
+
+###############################################################################################################################
+###############################################################################################################################
+    # component display graph visualization
+    def show(self):
+        """
+            Display the SVG graph visualization.
+        """
+        if not self.graph_svg_text:
+            print("No SVG data to display.")
+            return
+        display(HTML(self.graph_svg_text))
         

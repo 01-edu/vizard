@@ -1,5 +1,5 @@
 import re as re2
-def to_slug(text: str,project_path_dict: str) -> str:
+def to_slug(text: str,project_path_dict: dict) -> str:
     """
     Convert a string into a slug:
       - lowercase everything
@@ -18,11 +18,11 @@ def to_slug(text: str,project_path_dict: str) -> str:
     return txt.strip('-')
 
 
-def replace_keys(input_dict):
+def replace_keys(input_dict, project_path_dict: dict) -> str:
     new_dict = {}
     for key, value in input_dict.items():
         if isinstance(key, str):
-            new_key = to_slug(key)
+            new_key = to_slug(key, project_path_dict)
         else:
             new_key = key
         new_dict[new_key] = value
