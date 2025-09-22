@@ -6,7 +6,7 @@ setup(
     author='Data Team Force',                              #Team name
     author_email='masseck.thiaw@01talent.com',           # email
     description='A simple library for analytical graphs.', # A short description
-    packages=find_packages(include=["circular.*"]),      # add packages in project
+    packages=find_packages(include=["circular_graph.*"]),      # add packages in project
     install_requires=[                               # A list of other packages project needs
         'matplotlib<=3.10.0',
         #'python<=3.13.0',
