@@ -16,4 +16,5 @@ setup(
         'IPython<=8.30.0',
         'beautifulsoup4<=4.12.2'        
     ],
+    python_requires='>=3.8',                        # Minimum Python version requirement
 )
