@@ -9,7 +9,7 @@ setup(
     packages=find_packages(include=["circular.*"]),      # add packages in project
     install_requires=[                               # A list of other packages project needs
         'matplotlib<=3.10.0',
-        'python<=3.13.0',
+        #'python<=3.13.0',
         'pandas<=2.2.0',
         'numpy<=2.1.0',
         'plotly<=5.24.1',
