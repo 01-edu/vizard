@@ -31,4 +31,4 @@ jobs:
         if: steps.changed-md.outputs.changed_files != ''
         run: |
           pip install black
-          black ${{ steps.changed-md.outputs.changed_files }} --check --diff
+          black ${{ steps.changed-md.outputs.changed_files }} --check --diff --color
