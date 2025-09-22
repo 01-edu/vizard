@@ -15,7 +15,7 @@ This documentation covers the `circular_graph` module and its submodules, provid
 
 ## Overview
 
-The `circular_graph` package is a Python library for creating, visualizing, and manipulating modular (circular) graphs, with additional utilities for color gradients and text conversion. It is designed for analytical and educational purposes, supporting advanced graph rendering and color mapping.
+The `circular_graph` package is a Python library for creating, visualizing, and manipulating modular (circular) graphs, with additional utilities for color gradients and text conversion. It is designed for analytical purposes
 
 ---
 
@@ -30,10 +30,10 @@ modular_graph(graph_json, data, piscines_list, checkpoints_list, mandatory_list,
 ```
 - **graph_json**: Graph structure in JSON format.
 - **data**: Associated data for the graph.
-- **piscines_list**: List of piscine nodes.
-- **checkpoints_list**: List of checkpoint nodes.
-- **mandatory_list**: List of mandatory nodes.
-- **gradient_colors**: Optional list of three hex colors for gradients.
+- **piscines_list**: List of piscines.
+- **checkpoints_list**: List of checkpoints.
+- **mandatory_list**: List of mandatory projects.
+- **gradient_colors**: Optional list of three hex colors for gradients. *If not define, default will be used*
 
 #### Methods
 - `polar_to_cartesian(center_x, center_y, radius, angle_in_degrees)`
@@ -65,7 +65,6 @@ modular_graph(graph_json, data, piscines_list, checkpoints_list, mandatory_list,
 ```python
 from circular_graph.modular_graph import modular_graph
 mg = modular_graph(graph_json, data, piscines, checkpoints, mandatory)
-mg.render_slice(...)
 ```
 
 ---
@@ -99,7 +98,8 @@ mg.render_slice(...)
 ## color_tools.gradient
 
 ### Function: `create_gradient_html`
-Generates and displays an HTML file showing a color gradient using three hex color codes.
+Generates and displays an HTML file showing a color gradient legend using three hex colors.
+it is used in `display_gradient` to choose whether to show the gradient legend or not
 
 **Signature:**
 ```python
@@ -117,12 +117,6 @@ def create_gradient_html(start_color_hex, mid_color_hex, end_color_hex, min_val,
     """
 ```
 
-**Usage Example:**
-```python
-from circular_graph.color_tools.gradient import create_gradient_html
-html = create_gradient_html('#FFD700', '#32CD32', '#1E90FF', 0, 100)
-```
-
 ---
 
 ## tools.text_conversion
@@ -130,11 +124,11 @@ html = create_gradient_html('#FFD700', '#32CD32', '#1E90FF', 0, 100)
 ### Functions
 
 - `to_slug(text: str, project_path_dict: dict) -> str`
-  - Converts a string into a slug (lowercase, hyphens for non-alphanumerics, strips hyphens).
+  - Converts a string into a slug (lowercase, hyphens for non-alphanumerics, strips hyphens) Based on a project name dictionnary.
   - **Example:** `to_slug('Hello World!', {})  # 'hello-world'`
 
 - `replace_keys(input_dict, project_path_dict: dict) -> str`
-  - Replaces the keys of a dictionary with their slugified versions.
+  - Replaces the keys of a dictionary with their slugified versions based on a project name dictionnary .
   - **Example:** `replace_keys({'Hello World!': 1}, {})  # {'hello-world': 1}`
 
 ---
