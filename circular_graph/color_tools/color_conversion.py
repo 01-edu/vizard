@@ -1,13 +1,15 @@
+import re
 
-import re 
+
 def hex_to_rgb2(hex_color):
     """Convert a hex color to an RGB tuple."""
-    hex_color = hex_color.lstrip('#')
-    return tuple(int(hex_color[i:i + 2], 16) for i in (0, 2, 4))
+    hex_color = hex_color.lstrip("#")
+    return tuple(int(hex_color[i : i + 2], 16) for i in (0, 2, 4))
+
 
 def rgb_to_hex2(rgb):
     """Convert an RGB tuple to a hex color."""
-    return '#{:02x}{:02x}{:02x}'.format(*rgb)
+    return "#{:02x}{:02x}{:02x}".format(*rgb)
 
 
 def is_valid_hex_color_2(color_string):
@@ -15,12 +17,13 @@ def is_valid_hex_color_2(color_string):
     if not isinstance(color_string, str):
         return False
     # Regex for # followed by 3 or 6 hex characters
-    match = re.fullmatch(r'^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$', color_string)
+    match = re.fullmatch(r"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$", color_string)
     return bool(match)
 
 
 def interpolate_color(value, max_value, start_color, mid_color, end_color):
     from .color_conversion import hex_to_rgb2, rgb_to_hex2
+
     """
     Interpolate between three colors based on value.
 
@@ -58,14 +61,10 @@ def interpolate_color(value, max_value, start_color, mid_color, end_color):
 
 def value_to_color(value, max_value, gradient_colors=None):
     """Map a numeric value to a color on a gradient defined by three colors."""
-    start_color = '#FFD700'  #yellow
-    mid_color = '#32CD32'    #yellow blue
-    end_color = '#1E90FF' 
+    start_color = "#FFD700"  # yellow
+    mid_color = "#32CD32"  # yellow blue
+    end_color = "#1E90FF"
     if gradient_colors and len(gradient_colors) == 3:
-        start_color, mid_color, end_color = gradient_colors    
+        start_color, mid_color, end_color = gradient_colors
 
-    return interpolate_color(value,
-                               max_value,
-                                start_color,
-                                  mid_color,
-                                    end_color)
+    return interpolate_color(value, max_value, start_color, mid_color, end_color)

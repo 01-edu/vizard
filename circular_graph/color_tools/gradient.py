@@ -3,7 +3,10 @@ from IPython.display import display
 from IPython.display import HTML
 from .color_conversion import is_valid_hex_color_2
 
-def create_gradient_html(start_color_hex, mid_color_hex, end_color_hex, min_val, max_val):
+
+def create_gradient_html(
+    start_color_hex, mid_color_hex, end_color_hex, min_val, max_val
+):
     """
     Generates and optionally displays an HTML file displaying a color gradient
     using BeautifulSoup. Accepts hex color codes. (Hover effect removed)
@@ -35,12 +38,17 @@ def create_gradient_html(start_color_hex, mid_color_hex, end_color_hex, min_val,
     if min_val > max_val:
         raise ValueError("min_val must be less than max_val.")
     if not is_valid_hex_color_2(start_color_hex):
-        raise ValueError(f"Invalid start_color_hex: {start_color_hex}. Must be like #RRGGBB or #RGB.")
+        raise ValueError(
+            f"Invalid start_color_hex: {start_color_hex}. Must be like #RRGGBB or #RGB."
+        )
     if not is_valid_hex_color_2(mid_color_hex):
-        raise ValueError(f"Invalid mid_color_hex: {mid_color_hex}. Must be like #RRGGBB or #RGB.")
+        raise ValueError(
+            f"Invalid mid_color_hex: {mid_color_hex}. Must be like #RRGGBB or #RGB."
+        )
     if not is_valid_hex_color_2(end_color_hex):
-        raise ValueError(f"Invalid end_color_hex: {end_color_hex}. Must be like #RRGGBB or #RGB.")
-
+        raise ValueError(
+            f"Invalid end_color_hex: {end_color_hex}. Must be like #RRGGBB or #RGB."
+        )
 
     # Calculate middle value
     mid_val = (min_val + max_val) / 2
@@ -117,7 +125,7 @@ def create_gradient_html(start_color_hex, mid_color_hex, end_color_hex, min_val,
 """
 
     # --- Parse and Modify HTML with BeautifulSoup ---
-    soup = bs(base_html, 'html.parser')
+    soup = bs(base_html, "html.parser")
 
     # Update Title
     if soup.title:
@@ -125,43 +133,42 @@ def create_gradient_html(start_color_hex, mid_color_hex, end_color_hex, min_val,
         soup.title.string = f"Color Gradient: {min_val_str} to {max_val_str}"
 
     # Update Gradient Bar - Apply inline style for gradient
-    gradient_bar = soup.find(id='gradient-bar')
+    gradient_bar = soup.find(id="gradient-bar")
     if gradient_bar:
         gradient_style = f"background: linear-gradient(to right, {start_color_hex}, {mid_color_hex}, {end_color_hex});"
-        existing_style = gradient_bar.get('style', '')
-        gradient_bar['style'] = f"{existing_style}{';' if existing_style else ''}{gradient_style}"
+        existing_style = gradient_bar.get("style", "")
+        gradient_bar["style"] = (
+            f"{existing_style}{';' if existing_style else ''}{gradient_style}"
+        )
         # Remove cursor-crosshair if present (though removed from base_html already)
-        existing_classes = gradient_bar.get('class', [])
-        if 'cursor-crosshair' in existing_classes:
-            existing_classes.remove('cursor-crosshair')
-        gradient_bar['class'] = existing_classes
-
+        existing_classes = gradient_bar.get("class", [])
+        if "cursor-crosshair" in existing_classes:
+            existing_classes.remove("cursor-crosshair")
+        gradient_bar["class"] = existing_classes
 
     # Update Values
-    start_val_div = soup.find(id='start-value')
+    start_val_div = soup.find(id="start-value")
     if start_val_div:
         start_val_div.string = min_val_str
-    mid_val_div = soup.find(id='mid-value')
+    mid_val_div = soup.find(id="mid-value")
     if mid_val_div:
         mid_val_div.string = mid_val_str
-    end_val_div = soup.find(id='end-value')
+    end_val_div = soup.find(id="end-value")
     if end_val_div:
         end_val_div.string = max_val_str
 
     # Update Color Swatches - Apply inline style for background color
-    start_swatch = soup.find(id='start-swatch')
+    start_swatch = soup.find(id="start-swatch")
     if start_swatch:
-        start_swatch['style'] = f"background-color: {start_color_hex};"
+        start_swatch["style"] = f"background-color: {start_color_hex};"
 
-    mid_swatch = soup.find(id='mid-swatch')
+    mid_swatch = soup.find(id="mid-swatch")
     if mid_swatch:
-        mid_swatch['style'] = f"background-color: {mid_color_hex};"
+        mid_swatch["style"] = f"background-color: {mid_color_hex};"
 
-    end_swatch = soup.find(id='end-swatch')
+    end_swatch = soup.find(id="end-swatch")
     if end_swatch:
-        end_swatch['style'] = f"background-color: {end_color_hex};"
-
-
+        end_swatch["style"] = f"background-color: {end_color_hex};"
 
     # Get the modified HTML as a string
     final_html = soup.prettify()
