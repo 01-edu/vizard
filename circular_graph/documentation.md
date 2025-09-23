@@ -99,7 +99,7 @@ mg = modular_graph(graph_json, data, piscines, checkpoints, mandatory)
 
 ### Function: `create_gradient_html`
 Generates and displays an HTML file showing a color gradient legend using three hex colors.
-it is used in `display_gradient` to choose whether to show the gradient legend or not
+it is used in `display_gradient` method to choose whether to show the gradient legend or not
 
 **Signature:**
 ```python
