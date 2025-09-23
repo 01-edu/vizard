@@ -18,7 +18,7 @@ Install via uv pip :
 ```bash
 uv pip install git+https://github.com/01-edu/vizard.git
 ```
->*ps: must reinstaled each time kernel is restarted*
+>*ps: must be reinstalled each time kernel is restarted when used in a ipynb notebook*
 
 ### License & Authors
 See `setup.py` for license and author information.
