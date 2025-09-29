@@ -10,7 +10,7 @@ Vizard is a Python package for creating and visualizing graphs. It provides tool
 ### Package Structure
 - `circular_graph.modular_graph`: Main class and helpers for modular graph creation and rendering.
 - `circular_graph.color_tools`: Subpackage for color conversion and gradient generation.
-- `circular_graph.tools`: Subpackage for text conversion utilities.
+- `circular_graph.tools`: Subpackage for utilities.
 
 
 ### Installation
