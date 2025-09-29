@@ -133,5 +133,25 @@ def create_gradient_html(start_color_hex, mid_color_hex, end_color_hex, min_val,
 
 ---
 
+## tools.renderer_utils
+
+### Functions
+
+- `show_info_card(type: Literal["classic", "distribution"] = "classic") -> str`
+  - Returns the appropriate JS function to display info cards based on the visualization type.
+  - **Example:** `show_info_card(type='distribution')  # '(function showInfoCard(el) {el.style.cursor= "pointer";...'`
+
+- `show_classic_info_card() -> str`
+  - Returns a JavaScript function as a string to display classic info cards dynamically.
+    The function updates the info card's position and content based on the element's attributes.
+  - **Example:** `show_classic_info_card()  # '(function showInfoCard(el) {...projectText.textContent = projectName; dataText.textContent = dataNumber;...`
+
+- `show_distribution_info_card() -> str`
+  - Returns a JavaScript function as a string to display distribution info cards dynamically.
+    The function updates the info card's position and content based on the element's attributes.
+  - **Example:** `show_distribution_info_card()  # '(function showInfoCard(el) {...maxtext.textContent = ... upperfenceText.textContent = ... q3Text.textContent = ...})`'
+---
+
+
 ## License
 See `setup.py` for license and author information.
