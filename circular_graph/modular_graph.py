@@ -1,9 +1,11 @@
 from xml.etree import ElementTree as ET2
+from typing import Literal
 import math
-import json as json2
+import json 
 from circular_graph.color_tools.color_conversion import value_to_color
 from circular_graph.color_tools.gradient import create_gradient_html
 from IPython.display import display, HTML
+from circular_graph.tools.renderer_utils import show_info_card
 
 # __________________________________________________________________________________#
 # |                                                                                  |#
@@ -20,7 +22,10 @@ class modular_graph:
         checkpoints_list,
         mandatory_list,
         gradient_colors=None,
+        kind: Literal["classic", "distribution"] = "classic",
     ):
+        #Kind of graph
+        self.kind = kind
         # defs of the svg
         self.svg_defs = ET2.Element("defs")
         # Color Palette
@@ -120,16 +125,17 @@ class modular_graph:
         self.CURRENT_CENTER = 1000
 
         self.data = data
-        try:
-            self.max_value = max(data.values())
-        except:
-            self.max_value = 0
+        if self.kind == "classic":
+            try:
+                self.max_value = max(data.values())
+            except:
+                self.max_value = 0
         self.piscines_list = piscines_list
         self.checkpoints_list = checkpoints_list
         self.mandatory_list = mandatory_list
 
         self.graph_json = graph_json
-        self.graph_dict = {"graph": json2.loads(self.graph_json)}
+        self.graph_dict = {"graph": json.loads(self.graph_json)}
 
         # create the SVG
         self.root_svg, self.graph_svg_text = self.render_circular_map01(self.graph_dict)
@@ -415,39 +421,7 @@ class modular_graph:
                 "id": name,
                 "project-name": content_name,
                 "data-tooltip": str(value),
-                # js function to show info card
-                "onpointerenter": """ 
-            (function showInfoCard(el) { 
-                const infoCard = document.getElementById("info_card");
-                const cardA = document.getElementById("card_a");
-                const cardB = document.getElementById("card_b");
-                const projectText = document.getElementById("project_name_card");
-                const dataText = document.getElementById("data_card");
-                const dataNumber = el.getAttribute("data-tooltip") || "0";
-                const card_a_x_shift = -54.0;    const card_a_y_shift = -87.0;
-                const card_b_x_shift = -53.5;    const card_b_y_shift = -86.5;
-                const project_text_x_shift = -38.46500000000003;
-                const project_text_y_shift = -71.13599999999997;
-                const data_text_x_shift = -22.649999999999977;
-                const data_text_y_shift = -38.63599999999997;
-                const x = parseFloat(el.getAttribute("cx"));
-                const y = parseFloat(el.getAttribute("cy"));
-                const projectName = el.getAttribute("project-name") || el.getAttribute("id").toLowerCase();
-                console.log(x);
-                console.log(y);
-                projectText.textContent = projectName;
-                dataText.textContent = dataNumber;
-                cardA.setAttribute("x", x + card_a_x_shift);
-                cardA.setAttribute("y", y + card_a_y_shift);
-                cardB.setAttribute("x", x + card_b_x_shift);
-                cardB.setAttribute("y", y + card_b_y_shift);
-                projectText.setAttribute("x", x + project_text_x_shift);
-                projectText.setAttribute("y", y + project_text_y_shift);
-                dataText.setAttribute("x", x + data_text_x_shift);
-                dataText.setAttribute("y", y + data_text_y_shift);
-                infoCard.style.visibility = "visible";
-                })(this)
-            """,
+                "onpointerenter": show_info_card(self.kind),            
                 "onpointerleave": 'document.getElementById("info_card").style.visibility = "hidden";',
             },
         )
@@ -602,13 +576,19 @@ class modular_graph:
         # obj_type = object_attrs.get("type", "project")
         obj_mandatory = name in self.mandatory_list
         is_piscine = name in self.piscines_list
-        fill_color = (
+        fill_color = ""
+        if self.kind == "classic":
+            fill_color = (
             self.COLORS["neutral"]
             if value == 0
             else value_to_color(value, self.max_value, self.gradient_colors)
         )
-        # if obj_type == "exam": fill_color = self.COLORS["orange"]
-        # elif obj_type == "piscine": fill_color = self.COLORS.get("piscine_default_color", self.COLORS["teal"])
+        elif self.kind == "distribution":
+            fill_color = (
+                self.COLORS["neutral"]
+                if value == 0
+                else "teal"
+            )
 
         icon_radius = (
             self.PISCINE_CONSTANTS["radius"]
@@ -702,39 +682,8 @@ class modular_graph:
                     "id": name,
                     "project-name": name if not content_name else content_name,
                     "data-tooltip": str(value),
-                    "onpointerenter": """(function showInfoCard(el){
-                   const infoCard = document.getElementById("info_card");
-                   const cardA = document.getElementById("card_a");
-                   const cardB = document.getElementById("card_b");
-                   const projectText = document.getElementById("project_name_card");
-                   const dataText = document.getElementById("data_card");
-                   const dataNumber = el.getAttribute("data-tooltip") || "0";
-                   const card_a_x_shift = -54.0;
-                   const card_a_y_shift = -87.0;
-                   const card_b_x_shift = -53.5;
-                   const card_b_y_shift = -86.5;
-                   const project_text_x_shift = -38.46500000000003;
-                   const project_text_y_shift = -71.13599999999997;
-                   const data_text_x_shift = -22.649999999999977;
-                   const data_text_y_shift = -38.63599999999997;
-                   const x = parseFloat(el.getAttribute("cx"));
-                   const y = parseFloat(el.getAttribute("cy"));
-                   const projectName = el.getAttribute("project-name") || el.getAttribute("id").toLowerCase();
-                   console.log(x);
-                   console.log(y);
-                   projectText.textContent = projectName;
-                   dataText.textContent = dataNumber;
-                   cardA.setAttribute("x", x + card_a_x_shift);
-                   cardA.setAttribute("y", y + card_a_y_shift);
-                   cardB.setAttribute("x", x + card_b_x_shift);
-                   cardB.setAttribute("y", y + card_b_y_shift);
-                   projectText.setAttribute("x", x + project_text_x_shift);
-                   projectText.setAttribute("y", y + project_text_y_shift);
-                   dataText.setAttribute("x", x + data_text_x_shift);
-                   dataText.setAttribute("y", y + data_text_y_shift);
-                   infoCard.style.visibility = "visible";})(this)
-                   """,
-                    "onpointerleave": 'document.getElementById("info_card").style.visibility = "hidden";',
+                   "onpointerenter": show_info_card(self.kind),
+                   "onpointerleave": 'document.getElementById("info_card").style.visibility = "hidden";',
                 },
             )
             content_group.append(circle_el)
@@ -1181,7 +1130,7 @@ class modular_graph:
     ###############################################################################################################################
 
     # main rendering function for circular map 01
-    def render_circular_map01(self, graph_data):
+    def render_circular_map01(self, graph_data):    
 
         graph_attr = graph_data.get("graph", {})
         if not graph_attr:
@@ -1204,7 +1153,6 @@ class modular_graph:
         root.append(self.create_element("title", text_content="Module graph"))
         self.defs = self.create_element("defs")
         root.append(self.defs)
-        # ... (rest of the function remains the same)
 
         # Central Point
         central_point_key = graph_attr.get("centralPoint")
@@ -1273,96 +1221,10 @@ class modular_graph:
                     outer_g, section, outer_circle_config, i, "outer-circle"
                 )
 
-        # info card
-        """<g id="info_card">
-                <g filter="url(#filter8_d_1_272)" id="card">
-                    <rect fill="#9C9797" height="69" id="card_a" rx="5" width="110" x="722" y="651"></rect>
-                    <rect height="68" id="card_b" rx="4.5" stroke="#656464" width="109" x="722.5" y="651.5"></rect>
-                </g> 
-                
-                <text fill="white" font-family="Inter" font-size="12" font-weight="800" letter-spacing="0em" style="white-space: pre" xml:space="preserve">
-                    <tspan id="project_name_card" x="737.535" y="666.864">project name</tspan>
-                </text> 
-                <text fill="white" font-family="Inter" font-size="12" font-weight="800" letter-spacing="0em" style="white-space: pre" xml:space="preserve">
-                    <tspan id="data_card" x="753.35" y="699.364">number</tspan>
-                </text>
-            </g>"""
+        # Info Card
+        root.append(self.generate_info_card())
 
-        info_card = self.create_element(
-            "g",
-            {
-                "id": "info_card",
-                "filter": "url(#filter8_d_1_272)",
-                "style": "visibility: hidden;",
-            },
-        )
-        root.append(info_card)
-        card = self.create_element("g", {"id": "card"})
-        info_card.append(card)
-        card_a = self.create_element(
-            "rect",
-            {
-                "fill": "#9C9797",
-                "height": "69",
-                "id": "card_a",
-                "rx": "5",
-                "width": "110",
-                "x": "722",
-                "y": "651",
-            },
-        )
-        card.append(card_a)
-        card_b = self.create_element(
-            "rect",
-            {
-                "fill": "#A3A3A3",
-                "height": "68",
-                "id": "card_b",
-                "rx": "4.5",
-                "stroke": "#656464",
-                "width": "109",
-                "x": "722.5",
-                "y": "651.5",
-            },
-        )
-        card.append(card_b)
-        text1 = self.create_element(
-            "text",
-            {
-                "fill": "white",
-                "font-family": "Inter",
-                "font-size": "12",
-                "font-weight": "800",
-                "letter-spacing": "0em",
-                "style": "white-space: pre",
-                "xml:space": "preserve",
-            },
-        )
-        info_card.append(text1)
-        project_name_card = self.create_element(
-            "tspan",
-            {"id": "project_name_card", "x": "737.535", "y": "666.864"},
-            text_content="project name",
-        )
-        text1.append(project_name_card)
-        text2 = self.create_element(
-            "text",
-            {
-                "fill": "white",
-                "font-family": "Inter",
-                "font-size": "12",
-                "font-weight": "800",
-                "letter-spacing": "0em",
-                "style": "white-space: pre",
-                "xml:space": "preserve",
-            },
-        )
-        info_card.append(text2)
-        data_card = self.create_element(
-            "tspan", {"id": "data_card", "x": "753.35", "y": "699.364"}
-        )
-        text2.append(data_card)
-
+        #Add filter
         """
         <filter color-interpolation-filters="sRGB" filterunits="userSpaceOnUse" height="63" id="filter7_f_1_272"
                 width="65" x="855" y="994">
@@ -1407,11 +1269,204 @@ class modular_graph:
             )
         )
         return root, ET2.tostring(root, encoding="unicode")
+    
+    ###############################################################################################################################
+    ###############################################################################################################################
+    # main function to generate info card
+    def generate_info_card(self) -> ET2.Element:
+        if self.kind == "distribution":
+            return self.generate_distribution_info_card()
+        elif self.kind == "classic":
+            return self.generate_classic_info_card()
+        else:
+            print(f"Unknown kind '{self.kind}' for info card generation.")
+            return None
+
+    ###############################################################################################################################
+    ###############################################################################################################################
+    # component generation function for info card (type=classic)
+    def generate_classic_info_card(self) -> ET2.Element:
+                
+        """<g id="info_card">
+            <g filter="url(#filter8_d_1_272)" id="card">
+                <rect fill="#9C9797" height="69" id="card_a" rx="5" width="110" x="722" y="651"></rect>
+                <rect height="card_heiht" id="card_b" rx="4.5" stroke="#656464" width="card_width" x="722.5" y="651.5"></rect>
+            </g> 
+            
+            <text fill="white" font-family="Inter" font-size="12" font-weight="800" letter-spacing="0em" style="white-space: pre" xml:space="preserve">
+                <tspan id="project_name_card" x="737.535" y="666.864">project name</tspan>
+            </text> 
+            <text fill="white" font-family="Inter" font-size="12" font-weight="800" letter-spacing="0em" style="white-space: pre" xml:space="preserve">
+                <tspan id="data_card" x="753.35" y="699.364">number</tspan>
+            </text>
+        </g>"""
+        card_width = 150
+        card_height = 100
+        info_card = self.create_element(
+            "g",
+            {
+                "id": "info_card",
+                "filter": "url(#filter8_d_1_272)",
+                "style": "visibility: hidden;",
+            },
+        )
+        card = self.create_element("g", {"id": "card"})
+        info_card.append(card)
+        card_a = self.create_element(
+            "rect",
+            {
+                "fill": "#66696992",
+                "height": card_height,
+                "id": "card_a",
+                "rx": "5",
+                "width": card_width,
+                "x": "722.5",
+                "y": "651.5",
+            },
+        )
+        card.append(card_a)
+        card_b = self.create_element(
+            "rect",
+            {
+                "fill": "#21212188",
+                "height": card_height,
+                "id": "card_b",
+                "rx": "4.5",
+                "stroke": "#656464",
+                "width": card_width,
+                "x": "722.5",
+                "y": "651.5",
+            },
+        )
+        card.append(card_b)
+        text1 = self.create_element(
+            "text",
+            {
+                "fill": "white",
+                "font-family": "Inter",
+                "font-size": "20",
+                "font-weight": "800",
+                "letter-spacing": "0em",
+                "style": "white-space: pre",
+                "xml:space": "preserve",
+            },
+        )
+        info_card.append(text1)
+        project_name_card = self.create_element(
+            "tspan",
+            {"id": "project_name_card", "x": "737.535", "y": "666.864"},
+            text_content="project name",
+        )
+        text1.append(project_name_card)
+        text2 = self.create_element(
+            "text",
+            {
+                "fill": "white",
+                "font-family": "Inter",
+                "font-size": "24",
+                "font-weight": "800",
+                "letter-spacing": "0em",
+                "style": "white-space: pre",
+                "xml:space": "preserve",
+            },
+        )
+        info_card.append(text2)
+        data_card = self.create_element(
+            "tspan", {"id": "data_card", "x": "753.35", "y": "699.364"}
+        )
+        text2.append(data_card)
+
+        return info_card
+
+    ###############################################################################################################################
+    ###############################################################################################################################
+    # component generation function for info card (type=distribution)
+    def generate_distribution_info_card(self) -> ET2.Element:
+
+        card_width = 200
+        card_height = 290
+        info_card = self.create_element(
+            "g",
+            {
+                "id": "info_card",
+                "filter": "url(#filter8_d_1_272)",
+                "style": "visibility: hidden;",
+            },
+        )
+        #root.append(info_card)
+        card = self.create_element("g", {"id": "card"})
+        info_card.append(card)
+        card_a = self.create_element(
+            "rect",
+            {
+                "fill": "#66696992",
+                "height": card_height,
+                "id": "card_a",
+                "rx": "5",
+                "width": card_width,
+                "x": "722.5",
+                "y": "651.5",
+            },
+        )
+        card.append(card_a)
+        card_b = self.create_element(
+            "rect",
+            {
+                "fill": "#21212188",
+                "height": card_height,
+                "id": "card_b",
+                "rx": "4.5",
+                "stroke": "#656464",
+                "width": card_width,
+                "x": "722.5",
+                "y": "651.5",
+            },
+        )
+        card.append(card_b)
+        text1 = self.create_element(
+            "text",
+            {
+                "fill": "white",
+                "font-family": "Inter",
+                "font-size": "20",
+                "font-weight": "800",
+                "letter-spacing": "0em",
+                "style": "white-space: pre",
+                "xml:space": "preserve",
+            },
+        )
+        info_card.append(text1)
+        project_name_card = self.create_element(
+            "tspan",
+            {"id": "project_name_card", "x": "737.535", "y": "666.864"},
+            text_content="project name",
+        )
+        text1.append(project_name_card)
+        text2 = self.create_element(
+            "text",
+            {
+                "fill": "white",
+                "font-family": "Inter",
+                "font-size": "24",
+                "font-weight": "800",
+                "letter-spacing": "0em",
+                "style": "white-space: pre",
+                "xml:space": "preserve",
+            },
+        )
+        info_card.append(text2)
+        data_card = self.create_element(
+            "tspan", {"id": "data_card", "x": "753.35", "y": "699.364"}
+        )
+        text2.append(data_card)
+
+        return info_card
+
 
     ###############################################################################################################################
     ###############################################################################################################################
     # component rendering gradient legend
-    def display_gradient(
+    def display_gradient_legend(
         self, start_color_hex, mid_color_hex, end_color_hex, min_val, max_val
     ):
         """
