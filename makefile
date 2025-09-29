@@ -9,7 +9,7 @@ format-all:
 #   make check-formatting-all
 check-formatting-all:
 	@echo "Checking code format..."
-	@black --check.
+	@black --check .
 	@echo "Format check complete."
 #   make get-formatting-status-all
 get-formatting-status-all:
@@ -18,20 +18,32 @@ get-formatting-status-all:
 	@echo "Formatting status complete."
 
 #   make format-file(el) el=<file_path>
-format-file(el):
-	@echo "Formatting${el}..."
-	@black ${el}
-	@echo "Formatting ${el} complete."
+format-file:
+ifndef el
+	$(error "Please provide a file path using el=<file_path>")
+else
+	@echo "Formatting$(el)..."
+	@black $(el)
+	@echo "Formatting $(el) complete."
+endif
 
 #   make check-formatting-file(el) el=<file_path>
-check-formatting-file(el):
-	@echo "Checking ${el} formatting..."
-	@black --check --color ${el}
-	@echo "Checking ${el} formatting complete."
+check-formatting-file:
+ifndef el
+	$(error "Please provide a file path using el=<file_path>")
+else
+	@echo "Checking $(el) formatting..."
+	@black --check --color $(el)
+	@echo "Checking $(el) formatting complete."
+endif
 
 #   make get-formatting-status-file(el) el=<file_path>	
-get-formatting-status-file(el):
-	@echo "Getting ${el} formatting status..."
-	@black --diff --color ${el}
-	@echo "Getting ${el} formatting status complete."
+get-formatting-status-file:
+ifndef el
+	$(error "Please provide a file path using el=<file_path>")
+else
+	@echo "Getting $(el) formatting status..."
+	@black --diff --color $(el)
+	@echo "Getting $(el) formatting status complete."
+endif
 
