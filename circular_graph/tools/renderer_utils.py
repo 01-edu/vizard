@@ -1,13 +1,13 @@
-
 from typing import Literal
 
+
 # Function to return the appropriate JS function based on the type of info card
-def show_info_card(type:Literal["classic", "distribution"] = "classic") -> str:
+def show_info_card(type: Literal["classic", "distribution"] = "classic") -> str:
     """
     Returns the appropriate JS function to display info cards based on the visualization type.
 
     Args:
-        type (Literal["classic", "distribution"], optional): Type of visualization. Defaults to 
+        type (Literal["classic", "distribution"], optional): Type of visualization. Defaults to
         "classic".
 
     Returns:
@@ -22,7 +22,8 @@ def show_info_card(type:Literal["classic", "distribution"] = "classic") -> str:
     else:
         print("Invalid visualization type")
 
-#JS function to display 'classic' informations dynamically (project name -> number)
+
+# JS function to display 'classic' informations dynamically (project name -> number)
 def show_classic_info_card() -> str:
     """
     Returns a JavaScript function as a string to display classic info cards dynamically.
@@ -74,15 +75,16 @@ def show_classic_info_card() -> str:
     })(this)
     """
 
-#JS function to display distributions informations dynamically (project name -> min, q1, median, q3, max, outliers)
+
+# JS function to display distributions informations dynamically (project name -> min, q1, median, q3, max, outliers)
 def show_distribution_info_card() -> str:
     """
     Returns a JavaScript function as a string to display distribution info cards dynamically.
     The function updates the info card's position and content based on the element's attributes.
-    
+
     Args:
         None
-        
+
     Returns:
         str: JavaScript function as a string.
     """

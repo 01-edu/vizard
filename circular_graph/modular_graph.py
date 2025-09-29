@@ -1,7 +1,7 @@
 from xml.etree import ElementTree as ET2
 from typing import Literal
 import math
-import json 
+import json
 from circular_graph.color_tools.color_conversion import value_to_color
 from circular_graph.color_tools.gradient import create_gradient_html
 from IPython.display import display, HTML
@@ -24,7 +24,7 @@ class modular_graph:
         gradient_colors=None,
         kind: Literal["classic", "distribution"] = "classic",
     ):
-        #Kind of graph
+        # Kind of graph
         self.kind = kind
         # defs of the svg
         self.svg_defs = ET2.Element("defs")
@@ -421,7 +421,7 @@ class modular_graph:
                 "id": name,
                 "project-name": content_name,
                 "data-tooltip": str(value),
-                "onpointerenter": show_info_card(self.kind),            
+                "onpointerenter": show_info_card(self.kind),
                 "onpointerleave": 'document.getElementById("info_card").style.visibility = "hidden";',
             },
         )
@@ -579,16 +579,12 @@ class modular_graph:
         fill_color = ""
         if self.kind == "classic":
             fill_color = (
-            self.COLORS["neutral"]
-            if value == 0
-            else value_to_color(value, self.max_value, self.gradient_colors)
-        )
-        elif self.kind == "distribution":
-            fill_color = (
                 self.COLORS["neutral"]
                 if value == 0
-                else "teal"
+                else value_to_color(value, self.max_value, self.gradient_colors)
             )
+        elif self.kind == "distribution":
+            fill_color = self.COLORS["neutral"] if value == 0 else "teal"
 
         icon_radius = (
             self.PISCINE_CONSTANTS["radius"]
@@ -682,8 +678,8 @@ class modular_graph:
                     "id": name,
                     "project-name": name if not content_name else content_name,
                     "data-tooltip": str(value),
-                   "onpointerenter": show_info_card(self.kind),
-                   "onpointerleave": 'document.getElementById("info_card").style.visibility = "hidden";',
+                    "onpointerenter": show_info_card(self.kind),
+                    "onpointerleave": 'document.getElementById("info_card").style.visibility = "hidden";',
                 },
             )
             content_group.append(circle_el)
@@ -1130,7 +1126,7 @@ class modular_graph:
     ###############################################################################################################################
 
     # main rendering function for circular map 01
-    def render_circular_map01(self, graph_data):    
+    def render_circular_map01(self, graph_data):
 
         graph_attr = graph_data.get("graph", {})
         if not graph_attr:
@@ -1224,7 +1220,7 @@ class modular_graph:
         # Info Card
         root.append(self.generate_info_card())
 
-        #Add filter
+        # Add filter
         """
         <filter color-interpolation-filters="sRGB" filterunits="userSpaceOnUse" height="63" id="filter7_f_1_272"
                 width="65" x="855" y="994">
@@ -1269,7 +1265,7 @@ class modular_graph:
             )
         )
         return root, ET2.tostring(root, encoding="unicode")
-    
+
     ###############################################################################################################################
     ###############################################################################################################################
     # main function to generate info card
@@ -1286,16 +1282,15 @@ class modular_graph:
     ###############################################################################################################################
     # component generation function for info card (type=classic)
     def generate_classic_info_card(self) -> ET2.Element:
-                
         """<g id="info_card">
             <g filter="url(#filter8_d_1_272)" id="card">
                 <rect fill="#9C9797" height="69" id="card_a" rx="5" width="110" x="722" y="651"></rect>
                 <rect height="card_heiht" id="card_b" rx="4.5" stroke="#656464" width="card_width" x="722.5" y="651.5"></rect>
-            </g> 
-            
+            </g>
+
             <text fill="white" font-family="Inter" font-size="12" font-weight="800" letter-spacing="0em" style="white-space: pre" xml:space="preserve">
                 <tspan id="project_name_card" x="737.535" y="666.864">project name</tspan>
-            </text> 
+            </text>
             <text fill="white" font-family="Inter" font-size="12" font-weight="800" letter-spacing="0em" style="white-space: pre" xml:space="preserve">
                 <tspan id="data_card" x="753.35" y="699.364">number</tspan>
             </text>
@@ -1393,7 +1388,7 @@ class modular_graph:
                 "style": "visibility: hidden;",
             },
         )
-        #root.append(info_card)
+        # root.append(info_card)
         card = self.create_element("g", {"id": "card"})
         info_card.append(card)
         card_a = self.create_element(
@@ -1461,7 +1456,6 @@ class modular_graph:
         text2.append(data_card)
 
         return info_card
-
 
     ###############################################################################################################################
     ###############################################################################################################################
