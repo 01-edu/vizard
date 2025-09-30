@@ -59,21 +59,28 @@ def show_classic_info_card() -> str:
     const x = parseFloat(el.getAttribute("cx"));
     const y = parseFloat(el.getAttribute("cy"));
     const projectName = el.getAttribute("project-name") || el.getAttribute("id").toLowerCase();
-  
     /***********************************************************/
     projectText.textContent = projectName;
     dataText.textContent = dataNumber;
+
+    const projectTextWidth = projectText.getBBox().width; // width after rendering
+    const card_width = 150 + projectTextWidth;
+    // centrer horizontalement dans le card
+    const cardX = x + card_a_x_shift;
+    const centeredX = cardX + (card_width - projectTextWidth) / 2;
     /***********************************************************/
     cardA.setAttribute("x", x + card_a_x_shift);
     cardA.setAttribute("y", y + card_a_y_shift);
+    cardA.setAttribute("width", card_width)
 
     cardB.setAttribute("x", x + card_b_x_shift);
     cardB.setAttribute("y", y + card_b_y_shift);
+    cardB.setAttribute("width", card_width)
     /***********************************************************/
-    projectText.setAttribute("x", x + project_text_x_shift);
+    projectText.setAttribute("x", centeredX);
     projectText.setAttribute("y", y + project_text_y_shift);
 
-    dataText.setAttribute("x", x + data_text_x_shift);
+    dataText.setAttribute("x", centeredX);
     dataText.setAttribute("y", y + data_text_y_shift);
     infoCard.style.visibility = "visible";
     })(this)
