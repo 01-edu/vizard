@@ -45,30 +45,34 @@ def show_classic_info_card() -> str:
     const dataNumber = el.getAttribute("data-tooltip") || "0";
     /************************************************************/
     const card_a_x_shift = -54.0;
-    const card_a_y_shift = -87.0;
+    const card_a_y_shift = -127.0;
+
     const card_b_x_shift = -53.5;
-    const card_b_y_shift = -86.5;
+    const card_b_y_shift = -126.5;
+
     const project_text_x_shift = -38.46500000000003;
-    const project_text_y_shift = -71.13599999999997;
+    const project_text_y_shift = -101.13599999999997;
+
     const data_text_x_shift = -22.649999999999977;
-    const data_text_y_shift = -38.63599999999997;
+    const data_text_y_shift = -68.63599999999997;
     /************************************************************/
     const x = parseFloat(el.getAttribute("cx"));
     const y = parseFloat(el.getAttribute("cy"));
     const projectName = el.getAttribute("project-name") || el.getAttribute("id").toLowerCase();
-    console.log(x);
-    console.log(y);
+  
     /***********************************************************/
     projectText.textContent = projectName;
     dataText.textContent = dataNumber;
     /***********************************************************/
     cardA.setAttribute("x", x + card_a_x_shift);
     cardA.setAttribute("y", y + card_a_y_shift);
+
     cardB.setAttribute("x", x + card_b_x_shift);
     cardB.setAttribute("y", y + card_b_y_shift);
     /***********************************************************/
     projectText.setAttribute("x", x + project_text_x_shift);
     projectText.setAttribute("y", y + project_text_y_shift);
+
     dataText.setAttribute("x", x + data_text_x_shift);
     dataText.setAttribute("y", y + data_text_y_shift);
     infoCard.style.visibility = "visible";
