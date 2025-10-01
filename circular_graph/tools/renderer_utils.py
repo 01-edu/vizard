@@ -71,13 +71,11 @@ def show_classic_info_card() -> str:
     /***********************************************************/
     cardA.setAttribute("x", x + card_a_x_shift);
     cardA.setAttribute("y", y + card_a_y_shift);
-    cardA.setAttribute("width", card_width) // calculation made to adapt on HEX
+    cardA.setAttribute("width", 1900) // calculation made to adapt on HEX
 
     cardB.setAttribute("x", x + card_b_x_shift);
     cardB.setAttribute("y", y + card_b_y_shift);
-    cardB.setAttribute("visibilty", "visible");
-
-    cardB.setAttribute("width", card_width) // calculation made to adpat on HEX
+    cardB.setAttribute("width", 1000 // calculation made to adpat on HEX
     /***********************************************************/
     projectText.setAttribute("x", centeredX);
     projectText.setAttribute("y", y + project_text_y_shift);
