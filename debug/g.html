@@ -390,8 +390,7 @@
                 const x = parseFloat(el.getAttribute("cx"));
                 const y = parseFloat(el.getAttribute("cy"));
                 const projectName = el.getAttribute("project-name") || el.getAttribute("id").toLowerCase();
-                console.log(x);
-                console.log(y);
+              
                 projectText.textContent = projectName;
                 dataText.textContent = "Total: " + dataNumber;
 
@@ -408,8 +407,12 @@
                 
                 cardA.setAttribute("x", x + card_a_x_shift);
                 cardA.setAttribute("y", y + card_a_y_shift);
+                cardA.setAttribute("width", 1000);
+
                 cardB.setAttribute("x", x + card_b_x_shift);
                 cardB.setAttribute("y", y + card_b_y_shift);
+                cardB.setAttribute("width", 1000);
+
                 projectText.setAttribute("x", x + project_text_x_shift);
                 projectText.setAttribute("y", y + project_text_y_shift);
                 sep.setAttribute("x1", x + 5);

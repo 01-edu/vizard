@@ -106,8 +106,10 @@ def show_distribution_info_card() -> str:
     const infoCard = document.getElementById("info_card");
     const cardA = document.getElementById("card_a");
     const cardB = document.getElementById("card_b");
+
     const projectText = document.getElementById("project_name_card");
     const dataText = document.getElementById("data_card");
+
     const datajson = el.getAttribute("data-tooltip") || "0";
     const data = JSON.parse(datajson);
     /*****************************/
@@ -144,13 +146,21 @@ def show_distribution_info_card() -> str:
  
     //*-------- Adding Statistical Data
     maxtext.textContent = data["max"] !== null ? "Max: "+data["max"] : "Max: N/A";
+   
     upperfenceText.textContent = data["upper_fence"] !== null ? "Upperfence: "+data["upper_fence"] : "Upperfence: N/A";
+    
     q3Text.textContent = data["q3"] !== null ? "Q3: "+data["q3"] : "Q3: N/A";
+    
     medianText.textContent = data["median"] !== null ? "Median: "+data["median"] : "Median: N/A";
+    
     q1Text.textContent = data["q1"] !== null ? "Q1: "+data["q1"] : "Q1: N/A";
+    
     lowerfenceText.textContent = data["lower_fence"] !== null ? "Lowerfence: "+data["lower_fence"] : "Lowerfence: N/A";
+    
     mintext.textContent = data["min"] !== null ? "Min: "+data["min"] : "Min: N/A";
+    
     outliertext.textContent = data["outliers"] !== null ? "Outliers: "+data["outliers"].join(", ") : "Outliers: N/A";
+    
     /***********************************************************/
     cardA.setAttribute("x", x + card_a_x_shift);
     cardA.setAttribute("y", y + card_a_y_shift);

@@ -2,6 +2,7 @@ from xml.etree import ElementTree as ET2
 from typing import Literal
 import math
 import json
+import pandas as pd
 from circular_graph.color_tools.color_conversion import value_to_color
 from circular_graph.color_tools.gradient import create_gradient_html
 from IPython.display import display, HTML
@@ -544,6 +545,51 @@ class modular_graph:
     ):
         """
         render an SVG elements for a graphical representation of content items, such as projects, exams, or piscines in the parent group
+        according to one of available kinds
+
+        Variables:
+
+            parent_group (SVG element): The parent group to which the content item will be appended.
+            content_item_data (dict): A dictionary containing the content item data.
+            circle_props_from_parent (dict): A dictionary containing the circle properties from the parent.
+            object_attrs (dict): A dictionary containing the object attributes.
+            is_sub_content (bool): A boolean indicating whether the content item is a sub-content.
+        """
+
+        match self.kind:
+            case "distribution":
+                self.render_distribution_content(
+                    parent_group,
+                    content_item_data,
+                    circle_props_from_parent,
+                    object_attrs,
+                    is_sub_content,
+                    content_name,
+                )
+            case _:
+                self.render_classic_content(
+                    parent_group,
+                    content_item_data,
+                    circle_props_from_parent,
+                    object_attrs,
+                    is_sub_content,
+                    content_name,
+                )
+
+    ################################################################################################
+    ################################################################################################
+    #  rendering function for classic circular graph content (project -> integer)
+    def render_classic_content(
+        self,
+        parent_group,
+        content_item_data,
+        circle_props_from_parent,
+        object_attrs=None,
+        is_sub_content=False,
+        content_name=None,
+    ):
+        """
+        render an SVG elements for classic circular graph
 
         Variables:
 
@@ -573,18 +619,14 @@ class modular_graph:
         content_group = self.create_element("g", {"id": name})
         parent_group.append(content_group)
 
-        # obj_type = object_attrs.get("type", "project")
         obj_mandatory = name in self.mandatory_list
         is_piscine = name in self.piscines_list
         fill_color = ""
-        if self.kind == "classic":
-            fill_color = (
-                self.COLORS["neutral"]
-                if value == 0
-                else value_to_color(value, self.max_value, self.gradient_colors)
-            )
-        elif self.kind == "distribution":
-            fill_color = self.COLORS["neutral"] if value == 0 else "teal"
+        fill_color = (
+            self.COLORS["neutral"]
+            if value == 0
+            else value_to_color(value, self.max_value, self.gradient_colors)
+        )
 
         icon_radius = (
             self.PISCINE_CONSTANTS["radius"]
@@ -713,7 +755,181 @@ class modular_graph:
 
     ################################################################################################
     ################################################################################################
+    # rendering function for statistical distribution content
+    def render_distribution_content(
+        self,
+        parent_group,
+        content_item_data,
+        circle_props_from_parent,
+        object_attrs=None,
+        is_sub_content=False,
+        content_name=None,
+    ):
+        """
+        render an SVG elements for a graphical representation of statistical distribution
 
+        Variables:
+
+            parent_group (SVG element): The parent group to which the content item will be appended.
+            content_item_data (dict): A dictionary containing the content item data.
+            circle_props_from_parent (dict): A dictionary containing the circle properties from the parent.
+            object_attrs (dict): A dictionary containing the object attributes.
+            is_sub_content (bool): A boolean indicating whether the content item is a sub-content.
+        """
+
+        if object_attrs is None:
+            object_attrs = {}
+
+        name = self.get_content_name(content_item_data)
+        value = self.data.get(name, None)
+
+        coords = self.polar_to_cartesian(
+            self.CURRENT_CENTER,
+            self.CURRENT_CENTER,
+            circle_props_from_parent["radius"],
+            circle_props_from_parent["angle"],
+        )
+        x, y = coords["x"], coords["y"]
+
+        has_sub_contents = isinstance(content_item_data, dict)
+
+        content_group = self.create_element("g", {"id": name})
+        parent_group.append(content_group)
+
+        # obj_type = object_attrs.get("type", "project")
+        obj_mandatory = name in self.mandatory_list
+        is_piscine = name in self.piscines_list
+        fill_color = (
+            self.COLORS["neutral"] if not isinstance(value, pd.Series) else "cyan"
+        )
+
+        icon_radius = (
+            self.PISCINE_CONSTANTS["radius"]
+            if is_piscine
+            else circle_props_from_parent.get("contentRadius", 4)
+        )
+
+        if name in self.checkpoints_list:
+            icon = self.render_checkpoint_icon(
+                x,
+                y,
+                fill_color,
+                (
+                    self.CHECKPOINT_CONSTANTS["subContentWidth"]
+                    if is_sub_content
+                    else self.CHECKPOINT_CONSTANTS["width"]
+                ),
+            )
+            content_group.append(icon)
+        elif obj_mandatory:
+            icon = self.render_star_icon(
+                x,
+                y,
+                fill_color,
+                (
+                    self.STAR_CONSTANTS["subContentWidth"]
+                    if is_sub_content
+                    else self.STAR_CONSTANTS["width"]
+                ),
+                name,
+                name if not content_name else content_name,
+                value,
+            )
+            content_group.append(icon)
+        else:
+            if is_piscine:
+                gradient = self.create_element(
+                    "radialGradient",
+                    attributes={
+                        "id": content_item_data + "_gradient",
+                        "cx": "50%",
+                        "cy": "50%",
+                        "r": "50%",
+                        "fx": "50%",
+                        "fy": "50%",
+                    },
+                )
+                gradient.append(
+                    self.create_element(
+                        "stop",
+                        attributes={
+                            "offset": "0%",
+                            "stop-color": fill_color,
+                            "stop-opacity": "1",
+                        },
+                    )
+                )
+                gradient.append(
+                    self.create_element(
+                        "stop",
+                        attributes={
+                            "offset": "40%",
+                            "stop-color": fill_color,
+                            "stop-opacity": "0.5",
+                        },
+                    )
+                )
+                gradient.append(
+                    self.create_element(
+                        "stop",
+                        attributes={
+                            "offset": "100%",
+                            "stop-color": fill_color,
+                            "stop-opacity": "0",
+                        },
+                    )
+                )
+                self.defs.append(gradient)
+
+            circle_el = self.create_element(
+                "circle",
+                {
+                    "fill": (
+                        fill_color
+                        if not is_piscine
+                        else f"url(#{content_item_data}_gradient)"
+                    ),
+                    "r": str(icon_radius),
+                    "cx": str(x),
+                    "cy": str(y),
+                    "id": name,
+                    "project-name": name if not content_name else content_name,
+                    "data-tooltip": "{}",
+                    "onpointerenter": show_info_card(self.kind),
+                    "onpointerleave": 'document.getElementById("info_card").style.visibility = "hidden";',
+                },
+            )
+            content_group.append(circle_el)
+
+        # Content name text
+        name_offset = (
+            self.PISCINE_CONSTANTS["nameOffset"]
+            if is_piscine
+            else circle_props_from_parent.get("contentNameOffset", 34)
+        )
+        if not is_sub_content:
+            text_el = self.create_element(
+                "text",
+                {
+                    "x": str(x),
+                    "y": str(y + name_offset),
+                    "font-size": "12px",
+                    "text-anchor": "middle",
+                    "fill": self.COLORS["neutral"],
+                    "font-family": "IBM Plex Mono",
+                    "style": "text-transform: uppercase;",
+                },
+                text_content=name,
+            )
+            content_group.append(text_el)
+
+        if has_sub_contents:
+            self.render_sub_contents(
+                content_group, content_item_data, circle_props_from_parent
+            )
+
+    ##############################################################################################################################
+    ##############################################################################################################################
     # component rendering function for sub_content
     def render_sub_contents(
         self, parent_g, content_data_with_subs, parent_circle_props
@@ -1385,7 +1601,7 @@ class modular_graph:
             {
                 "id": "info_card",
                 "filter": "url(#filter8_d_1_272)",
-                "style": "visibility: hidden;",
+                "style": "visibility: visible;",
             },
         )
         # root.append(info_card)
@@ -1440,20 +1656,55 @@ class modular_graph:
         text2 = self.create_element(
             "text",
             {
-                "fill": "white",
+                "fill": "#66FFFA",
                 "font-family": "Inter",
-                "font-size": "24",
-                "font-weight": "800",
-                "letter-spacing": "0em",
-                "style": "white-space: pre",
+                "font-size": "18",
+                "font-weight": "400",
+                "letter-spacing": "2px",
+                "style": "white-space: pre; color: #0e0e0e92;",
                 "xml:space": "preserve",
             },
         )
         info_card.append(text2)
+
         data_card = self.create_element(
             "tspan", {"id": "data_card", "x": "753.35", "y": "699.364"}
         )
+        upper_fence_card = self.create_element(
+            "tspan", {"id": "upperfence", "x": "753.35", "y": "723.364"}
+        )
+        lower_fence_card = self.create_element(
+            "tspan", {"id": "lowerfence", "x": "753.35", "y": "747.364"}
+        )
+        q1_card = self.create_element(
+            "tspan", {"id": "q1", "x": "753.35", "y": "747.364"}
+        )
+        q2_card = self.create_element(
+            "tspan", {"id": "q2", "x": "753.35", "y": "747.364"}
+        )
+        q3_card = self.create_element(
+            "tspan", {"id": "q3", "x": "753.35", "y": "747.364"}
+        )
+        min_card = self.create_element(
+            "tspan", {"id": "min", "x": "753.35", "y": "743.364"}
+        )
+        max_card = self.create_element(
+            "tspan", {"id": "max", "x": "753.35", "y": "747.364"}
+        )
+        outliers_card = self.create_element(
+            "tspan",
+            {"id": "outliers", "x": "753.35", "y": "747.364"},
+            text_content="hohoho",
+        )
         text2.append(data_card)
+        text2.append(upper_fence_card)
+        text2.append(lower_fence_card)
+        text2.append(q1_card)
+        text2.append(q2_card)
+        text2.append(q3_card)
+        text2.append(min_card)
+        text2.append(max_card)
+        text2.append(outliers_card)
 
         return info_card
 
