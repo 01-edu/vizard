@@ -833,7 +833,7 @@ class modular_graph:
                 ),
                 name,
                 name if not content_name else content_name,
-                value,
+                value.to_json(),
             )
             content_group.append(icon)
         else:
@@ -894,7 +894,7 @@ class modular_graph:
                     "cy": str(y),
                     "id": name,
                     "project-name": name if not content_name else content_name,
-                    "data-tooltip": "{}",
+                    "data-tooltip": f"{value.to_json() if isinstance(value, pd.Series) else {}}",
                     "onpointerenter": show_info_card(self.kind),
                     "onpointerleave": 'document.getElementById("info_card").style.visibility = "hidden";',
                 },
@@ -1601,7 +1601,7 @@ class modular_graph:
             {
                 "id": "info_card",
                 "filter": "url(#filter8_d_1_272)",
-                "style": "visibility: visible;",
+                "style": "visibility: hidden;",
             },
         )
         # root.append(info_card)
@@ -1653,6 +1653,22 @@ class modular_graph:
             text_content="project name",
         )
         text1.append(project_name_card)
+
+        # line separator
+        line = self.create_element(
+            "line",
+            {
+                "id": "separator",
+                "x1": "720",
+                "x2": "920",
+                "y1": "690",
+                "y2": "690",
+                "stroke": "grey",
+                "stroke-width": "2",
+            },
+        )
+        info_card.append(line)
+
         text2 = self.create_element(
             "text",
             {
@@ -1667,44 +1683,28 @@ class modular_graph:
         )
         info_card.append(text2)
 
-        data_card = self.create_element(
-            "tspan", {"id": "data_card", "x": "753.35", "y": "699.364"}
-        )
-        upper_fence_card = self.create_element(
-            "tspan", {"id": "upperfence", "x": "753.35", "y": "723.364"}
-        )
-        lower_fence_card = self.create_element(
-            "tspan", {"id": "lowerfence", "x": "753.35", "y": "747.364"}
-        )
-        q1_card = self.create_element(
-            "tspan", {"id": "q1", "x": "753.35", "y": "747.364"}
-        )
-        q2_card = self.create_element(
-            "tspan", {"id": "q2", "x": "753.35", "y": "747.364"}
-        )
-        q3_card = self.create_element(
-            "tspan", {"id": "q3", "x": "753.35", "y": "747.364"}
-        )
-        min_card = self.create_element(
-            "tspan", {"id": "min", "x": "753.35", "y": "743.364"}
-        )
-        max_card = self.create_element(
-            "tspan", {"id": "max", "x": "753.35", "y": "747.364"}
-        )
-        outliers_card = self.create_element(
-            "tspan",
-            {"id": "outliers", "x": "753.35", "y": "747.364"},
-            text_content="hohoho",
-        )
-        text2.append(data_card)
-        text2.append(upper_fence_card)
-        text2.append(lower_fence_card)
-        text2.append(q1_card)
-        text2.append(q2_card)
-        text2.append(q3_card)
-        text2.append(min_card)
-        text2.append(max_card)
-        text2.append(outliers_card)
+        stats = [
+            "upperfence",
+            "lowerfence",
+            "q1",
+            "median",
+            "q3",
+            "min",
+            "max",
+            "outliers",
+        ]
+
+        x = 753.35  # x start
+        y_start = 699.364  # y start
+        y_step = 24  # y-margin between tspans
+
+        for i, label in enumerate(stats):
+            tspan = self.create_element(
+                "tspan",
+                {"id": label, "x": str(x), "y": str(y_start + i * y_step)},
+                text_content=label.capitalize(),
+            )
+            text2.append(tspan)
 
         return info_card
 
