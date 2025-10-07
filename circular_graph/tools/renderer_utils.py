@@ -65,7 +65,6 @@ def show_classic_info_card() -> str:
 
     const projectTextWidth = projectText.getBBox().width; // width after rendering
     const card_width = 150 + projectTextWidth;
-    // centrer horizontalement dans le card
     const cardX = x + card_a_x_shift;
     const centeredX = cardX + (card_width - projectTextWidth) / 2;
     /***********************************************************/
@@ -123,8 +122,8 @@ def show_distribution_info_card() -> str:
     const project_text_x_shift = 60.46500000000003;
     const project_text_y_shift = -270.13599999999997;
     const text_x_shift = 10.649999999999977;
-    const text_y_shift = -195.63599999999997;
-    const text_y_margin = 25;
+    const text_y_shift = -215.63599999999997;
+    const text_y_margin = 26;
 
     /*******************************************/
     const x = parseFloat(el.getAttribute("cx"));
@@ -134,6 +133,12 @@ def show_distribution_info_card() -> str:
     console.log(y);
     /*********************************************/
     projectText.textContent = projectName;
+
+    /*********************************************/
+    const projectTextWidth = projectText.getBBox().width; // width after rendering
+    const card_width = parseFloat(cardA.getAttribute("data-width")) + projectTextWidth
+    const cardX = x + card_a_x_shift;
+    const centeredX = cardX + (card_width - projectTextWidth) / 2;
  
     //*-------- Adding Statistical Data
     const ids  = ["max", "upperfence", "q3", "median", "q1", "lowerfence", "min", "outliers"];
@@ -152,16 +157,21 @@ def show_distribution_info_card() -> str:
     /***********************************************************/
     cardA.setAttribute("x", x + card_a_x_shift);
     cardA.setAttribute("y", y + card_a_y_shift);
+    cardA.setAttribute("width", card_width + projectTextWidth) // calculation made to adapt on HEX
+
+        
     cardB.setAttribute("x", x + card_b_x_shift);
     cardB.setAttribute("y", y + card_b_y_shift);
+    cardB.setAttribute("width", card_width + projectTextWidth) // calculation made to adapt on HEX
+
     /***********************************************/
-    projectText.setAttribute("x", x + project_text_x_shift);
+    projectText.setAttribute("x", centeredX);
     projectText.setAttribute("y", y + project_text_y_shift);
 
     sep.setAttribute("x1", x + 5);
-    sep.setAttribute("y1", y + text_y_shift-20);
-    sep.setAttribute("x2", x + 200);
-    sep.setAttribute("y2", y + text_y_shift-20);
+    sep.setAttribute("y1", y + text_y_shift -30);
+    sep.setAttribute("x2", x +card_width );
+    sep.setAttribute("y2", y + text_y_shift - 30);
 
     infoCard.style.visibility = "visible";
     })(this)
