@@ -123,7 +123,7 @@ def show_distribution_info_card() -> str:
     const project_text_y_shift = -270.13599999999997;
     const text_x_shift = 10.649999999999977;
     const text_y_shift = -215.63599999999997;
-    const text_y_margin = 26;
+    const text_y_margin = 28;
 
     /*******************************************/
     const x = parseFloat(el.getAttribute("cx"));
@@ -169,9 +169,9 @@ def show_distribution_info_card() -> str:
     projectText.setAttribute("y", y + project_text_y_shift);
 
     sep.setAttribute("x1", x + 5);
-    sep.setAttribute("y1", y + text_y_shift);
-    sep.setAttribute("x2", x +card_width );
-    sep.setAttribute("y2", y + text_y_shift);
+    sep.setAttribute("y1", y + text_y_shift -30);
+    sep.setAttribute("x2", x + card_width + card_width/4);
+    sep.setAttribute("y2", y + text_y_shift - 30);
 
     infoCard.style.visibility = "visible";
     })(this)
