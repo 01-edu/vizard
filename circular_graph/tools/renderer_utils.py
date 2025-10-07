@@ -64,7 +64,7 @@ def show_classic_info_card() -> str:
     dataText.textContent = dataNumber;
 
     const projectTextWidth = projectText.getBBox().width; // width after rendering
-    const card_width = 150 + projectTextWidth;
+    const card_width = parseFloat(cardA.getAttribute("data-width")) + projectTextWidth;
     const cardX = x + card_a_x_shift;
     const centeredX = cardX + (card_width - projectTextWidth) / 2;
     /***********************************************************/
@@ -169,9 +169,9 @@ def show_distribution_info_card() -> str:
     projectText.setAttribute("y", y + project_text_y_shift);
 
     sep.setAttribute("x1", x + 5);
-    sep.setAttribute("y1", y + text_y_shift -30);
+    sep.setAttribute("y1", y + text_y_shift);
     sep.setAttribute("x2", x +card_width );
-    sep.setAttribute("y2", y + text_y_shift - 30);
+    sep.setAttribute("y2", y + text_y_shift);
 
     infoCard.style.visibility = "visible";
     })(this)
