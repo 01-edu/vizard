@@ -111,16 +111,7 @@ def show_distribution_info_card() -> str:
     const dataText = document.getElementById("data_card");
 
     const datajson = el.getAttribute("data-tooltip") || "0";
-    const data = JSON.parse(datajson);
-    /*****************************/
-    const outliertext = document.getElementById("outliers");
-    const maxtext = document.getElementById("max");
-    const upperfenceText = document.getElementById("upperfence");
-    const lowerfenceText = document.getElementById("lowerfence");
-    const q3Text = document.getElementById("q3");
-    const medianText = document.getElementById("median");
-    const q1Text = document.getElementById("q1");
-    const mintext = document.getElementById("min");
+    const data = datajson == "0" ? "N/A": JSON.parse(datajson);
     const sep = document.getElementById("separator");
 
     /*****************************/
@@ -145,21 +136,18 @@ def show_distribution_info_card() -> str:
     projectText.textContent = projectName;
  
     //*-------- Adding Statistical Data
-    maxtext.textContent = data["max"] !== null ? "Max: "+data["max"] : "Max: N/A";
-   
-    upperfenceText.textContent = data["upper_fence"] !== null ? "Upperfence: "+data["upper_fence"] : "Upperfence: N/A";
-    
-    q3Text.textContent = data["q3"] !== null ? "Q3: "+data["q3"] : "Q3: N/A";
-    
-    medianText.textContent = data["median"] !== null ? "Median: "+data["median"] : "Median: N/A";
-    
-    q1Text.textContent = data["q1"] !== null ? "Q1: "+data["q1"] : "Q1: N/A";
-    
-    lowerfenceText.textContent = data["lower_fence"] !== null ? "Lowerfence: "+data["lower_fence"] : "Lowerfence: N/A";
-    
-    mintext.textContent = data["min"] !== null ? "Min: "+data["min"] : "Min: N/A";
-    
-    outliertext.textContent = data["outliers"] !== null ? "Outliers: "+data["outliers"].join(", ") : "Outliers: N/A";
+    const ids  = ["max", "upperfence", "q3", "median", "q1", "lowerfence", "min", "outliers"];
+    ids.forEach((value, index) => {
+       const el = document.getElementById(value);
+       el.textContent = data && data[value] !== undefined 
+        ? `${value.charAt(0).toUpperCase() + value.slice(1)} : ${data[value]}` 
+        : `${value.charAt(0).toUpperCase() + value.slice(1)} : N/A`;
+ 
+        el.setAttribute("x", x + text_x_shift);
+        el.setAttribute("y", y + text_y_shift + text_y_margin * index);
+
+    });
+
     
     /***********************************************************/
     cardA.setAttribute("x", x + card_a_x_shift);
@@ -174,30 +162,6 @@ def show_distribution_info_card() -> str:
     sep.setAttribute("y1", y + text_y_shift-20);
     sep.setAttribute("x2", x + 200);
     sep.setAttribute("y2", y + text_y_shift-20);
-
-    maxtext.setAttribute("x", x + text_x_shift);
-    maxtext.setAttribute("y", y + text_y_shift);
-
-    upperfenceText.setAttribute("x", x + text_x_shift);
-    upperfenceText.setAttribute("y", y + text_y_shift + text_y_margin);
-
-    q3Text.setAttribute("x", x + text_x_shift);
-    q3Text.setAttribute("y", y + text_y_shift + text_y_margin*2);
-
-    medianText.setAttribute("x", x + text_x_shift);
-    medianText.setAttribute("y", y + text_y_shift + text_y_margin*3);
-
-    q1Text.setAttribute("x", x + text_x_shift);
-    q1Text.setAttribute("y", y + text_y_shift + text_y_margin*4);
-
-    lowerfenceText.setAttribute("x", x + text_x_shift);
-    lowerfenceText.setAttribute("y", y + text_y_shift + text_y_margin*5);
-
-    mintext.setAttribute("x", x + text_x_shift);
-    mintext.setAttribute("y", y + text_y_shift + text_y_margin*6);
-
-    outliertext.setAttribute("x", x + text_x_shift);
-    outliertext.setAttribute("y", y + text_y_shift + text_y_margin*7);
 
     infoCard.style.visibility = "visible";
     })(this)
