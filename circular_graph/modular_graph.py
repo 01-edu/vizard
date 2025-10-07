@@ -1612,6 +1612,7 @@ class modular_graph:
             {
                 "fill": "#66696992",
                 "height": card_height,
+                "data-width": card_width,
                 "id": "card_a",
                 "rx": "5",
                 "width": card_width,
@@ -1661,8 +1662,8 @@ class modular_graph:
                 "id": "separator",
                 "x1": "720",
                 "x2": "920",
-                "y1": "690",
-                "y2": "690",
+                "y1": "650",
+                "y2": "650",
                 "stroke": "grey",
                 "stroke-width": "2",
             },
@@ -1701,7 +1702,7 @@ class modular_graph:
         for i, label in enumerate(stats):
             tspan = self.create_element(
                 "tspan",
-                {"id": label, "x": str(x), "y": str(y_start + i * y_step)},
+                {"id": str(label), "x": str(x), "y": str(y_start + i * y_step)},
                 text_content=label.capitalize(),
             )
             text2.append(tspan)
