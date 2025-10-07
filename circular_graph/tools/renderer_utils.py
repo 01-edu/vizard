@@ -170,7 +170,7 @@ def show_distribution_info_card() -> str:
 
     sep.setAttribute("x1", x + 5);
     sep.setAttribute("y1", y + text_y_shift -30);
-    sep.setAttribute("x2", x + card_width + card_width/4);
+    sep.setAttribute("x2", x + card_width * 1.5);
     sep.setAttribute("y2", y + text_y_shift - 30);
 
     infoCard.style.visibility = "visible";
