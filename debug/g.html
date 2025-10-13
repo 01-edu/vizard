@@ -12,6 +12,7 @@
   xmlns:xlink="http://www.w3.org/1999/xlink"
   style="max-width: 1500px; display: block; margin: 0 auto"é&
   viewBox="0 0 2000 2000"
+  id="canevas"
   fill="none"
 >
   <title>Module graph</title>
@@ -182,6 +183,26 @@
       />
     </filter>
   </defs>
+   <line  x1="0" y1="100" x2="100" y2="100" stroke="grey" stroke-width="2"
+   onpointerenter="(
+    function rule(el){
+      const size = document.getElementById('canevas').getAttribute('viewBox').split(' ').slice(2)
+      const div = 7
+      el.setAttribute('x2', parseFloat(size[0]))
+      el.setAttribute('y1', parseFloat(size[1])/div +15)
+      el.setAttribute('y2', parseFloat(size[1])/div +15)
+    })(this)"
+   />
+      <line  x1="1000" y1="0" x2="1000" y2="100" stroke="yellow" stroke-width="2"
+   onpointerenter="(
+    function rule(el){
+      const size = document.getElementById('canevas').getAttribute('viewBox').split(' ').slice(2)
+      const div = 1 + 1 / 5
+      el.setAttribute('x1', parseFloat(size[0])/div - 15)
+      el.setAttribute('x2', parseFloat(size[0])/div - 15)      
+      el.setAttribute('y2', parseFloat(size[1]))
+    })(this)"
+   />
   <g id="checkpoint">
     <g
       transform="translate(989.0, 986.5555555555555) scale(1.2222222222222223)"
