@@ -1359,7 +1359,7 @@ class modular_graph:
                 # "xmlns": SVG_NS, # REMOVED
                 # "xmlns:xlink": XLINK_NS, # REMOVED - create_element handles namespacing the tag, ET.tostring handles declaring the namespace
                 "viewBox": f"0 0 {svg_size} {svg_size}",
-                "id" : "canevas",
+                "id": "canevas",
                 "fill": "none",
             },
         )
