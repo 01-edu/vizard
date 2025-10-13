@@ -110,7 +110,7 @@ def show_distribution_info_card() -> str:
     const dataText = document.getElementById("data_card");
 
     const datajson = el.getAttribute("data-tooltip") || "0";
-    const data = datajson == "0" ? "N/A": JSON.parse(datajson);
+    const data = datajson == "0" ? "N/A": JSON.parse(datajson); 
     const sep = document.getElementById("separator");
 
     /*****************************/
@@ -129,8 +129,7 @@ def show_distribution_info_card() -> str:
     const x = parseFloat(el.getAttribute("cx"));
     const y = parseFloat(el.getAttribute("cy"));
     const projectName = el.getAttribute("project-name") || el.getAttribute("id").toLowerCase();
-    console.log(x);
-    console.log(y);
+ 
     /*********************************************/
     projectText.textContent = projectName;
 
@@ -147,7 +146,6 @@ def show_distribution_info_card() -> str:
        el.textContent = data && data[value] !== undefined 
         ? `${value.charAt(0).toUpperCase() + value.slice(1)} : ${data[value]}` 
         : `${value.charAt(0).toUpperCase() + value.slice(1)} : N/A`;
- 
         el.setAttribute("x", x + text_x_shift);
         el.setAttribute("y", y + text_y_shift + text_y_margin * index);
 
@@ -155,23 +153,46 @@ def show_distribution_info_card() -> str:
 
     
     /***********************************************************/
-    cardA.setAttribute("x", x + card_a_x_shift);
-    cardA.setAttribute("y", y + card_a_y_shift);
-    cardA.setAttribute("width", card_width + projectTextWidth) // calculation made to adapt on HEX
+    const size = document.getElementById('canevas').getAttribute('viewBox').split(' ').slice(2)
+    total_width = parseFloat(size[0])
+    total_height = parseFloat(size[1])
+    limit_width = total_width / (1+1/5)
+    limit_height = total_height / 7
+    interval = 15  
 
+        cardA.setAttribute("x", x + card_a_x_shift);
+        cardA.setAttribute("y", y + card_a_y_shift);
+        cardA.setAttribute("width", card_width + projectTextWidth) // calculation made to adapt on HEX
+
+            
+        cardB.setAttribute("x", x + card_b_x_shift);
+        cardB.setAttribute("y", y + card_b_y_shift);
+        cardB.setAttribute("width", card_width + projectTextWidth) // calculation made to adapt on HEX
+
+        /***********************************************/
+        projectText.setAttribute("x", centeredX);
+        projectText.setAttribute("y", y + project_text_y_shift);
+
+        sep.setAttribute("x1", x + 5);
+        sep.setAttribute("y1", y + text_y_shift -30);
+        sep.setAttribute("x2", x + cardA.getBBox().width);
+        sep.setAttribute("y2", y + text_y_shift - 30);
+
+       ids.forEach((value, index) => {
+            const el = document.getElementById(value);
+            const stat_holder = document.getElementById('stat-holder');
+            el.textContent = data && data[value] !== undefined 
+                ? `${value.charAt(0).toUpperCase() + value.slice(1)} : ${data[value]}` 
+                : `${value.charAt(0).toUpperCase() + value.slice(1)} : N/A`;
+                if (data[value] == undefined) {
+                    el.setAttribute("fill", "grey")
+                } else {
+                    el.setAttribute("fill", "#66FFFA")
+                }
         
-    cardB.setAttribute("x", x + card_b_x_shift);
-    cardB.setAttribute("y", y + card_b_y_shift);
-    cardB.setAttribute("width", card_width + projectTextWidth) // calculation made to adapt on HEX
-
-    /***********************************************/
-    projectText.setAttribute("x", centeredX);
-    projectText.setAttribute("y", y + project_text_y_shift);
-
-    sep.setAttribute("x1", x + 5);
-    sep.setAttribute("y1", y + text_y_shift -30);
-    sep.setAttribute("x2", x + cardA.getBBox().width);
-    sep.setAttribute("y2", y + text_y_shift - 30);
+                el.setAttribute("x", x + text_x_shift);
+                el.setAttribute("y", y + text_y_shift + text_y_margin * index);
+        });
 
     infoCard.style.visibility = "visible";
     })(this)
