@@ -171,7 +171,7 @@ def show_distribution_info_card() -> str:
     projectText.setAttribute("y", y + project_text_y_shift * project_text_y_factor);
 
     sep.setAttribute("x1", x + x_shift +5);
-    sep.setAttribute("x2", x + x_shift + card_width *1.5);
+    sep.setAttribute("x2", x + x_shift + card_width *1.25);
     
     sep.setAttribute("y1", y + (text_y_shift * text_y_factor) -30);
     sep.setAttribute("y2", y + (text_y_shift * text_y_factor) - 30);
