@@ -116,7 +116,7 @@ def show_distribution_info_card() -> str:
     /*****************************/
     const card_a_x_shift = 1.0;
     const card_a_y_shift = -295.0;
-    const card_b_x_shift = 1.5;
+    const card_b_x_shift = 1;
     const card_b_y_shift = -295.5;
     /***********************************************************/
     const project_text_x_shift = 60.46500000000003;
@@ -131,25 +131,13 @@ def show_distribution_info_card() -> str:
     const projectName = el.getAttribute("project-name") || el.getAttribute("id").toLowerCase();
  
     /*********************************************/
-    projectText.textContent = projectName;
+    projectText.textContent = projectName.toUpperCase();
 
     /*********************************************/
     const projectTextWidth = projectText.getBBox().width; // width after rendering
     const card_width = parseFloat(cardA.getAttribute("data-width")) + projectTextWidth
     const cardX = x + card_a_x_shift;
-    const centeredX = cardX + (card_width - projectTextWidth) / 2;
  
-    //*-------- Adding Statistical Data
-    const ids  = ["max", "upperfence", "q3", "median", "q1", "lowerfence", "min", "outliers"];
-    ids.forEach((value, index) => {
-       const el = document.getElementById(value);
-       el.textContent = data && data[value] !== undefined 
-        ? `${value.charAt(0).toUpperCase() + value.slice(1)} : ${data[value]}` 
-        : `${value.charAt(0).toUpperCase() + value.slice(1)} : N/A`;
-        el.setAttribute("x", x + text_x_shift);
-        el.setAttribute("y", y + text_y_shift + text_y_margin * index);
-
-    });
 
     
     /***********************************************************/
@@ -158,30 +146,38 @@ def show_distribution_info_card() -> str:
     total_height = parseFloat(size[1]), //px
     limit_width = total_width / (1+1/5), //px
     limit_height = total_height / 7, //px
-    interval = 15, //px  
-    y_factor = y <= limit_height ? -1 : 1,
-    x_factor = x >= limit_width ? -1 : 1; 
+
+    y_factor = y <= limit_height+ 15 ? -0.15 : 1,
+    project_text_y_factor = y <= limit_height+ 15 ? -0.27 : 1,
+    text_y_factor = y <= limit_height+ 15 ? -0.55 : 1,
+
+    x_shift = x >= limit_width -15 ? (card_width - card_a_x_shift) * -1  : card_a_x_shift;
+    const centeredX =  x >= limit_width -15 
+    ?  cardX - (card_width - projectTextWidth)
+    : cardX + (card_width - projectTextWidth) / 2;
     
 
-    cardA.setAttribute("x", x + card_a_x_shift * x_factor);
-    cardA.setAttribute("y", y + card_a_y_shift * y_factor);
+    cardA.setAttribute("x", x + x_shift);
+    cardA.setAttribute("y", y + (card_a_y_shift * y_factor));
     cardA.setAttribute("width", card_width + projectTextWidth) // calculation made to adapt on HEX
 
             
-    cardB.setAttribute("x", x + card_b_x_shift * x_factor);
-    cardB.setAttribute("y", y + card_b_y_shift * y_factor);
-    cardB.setAttribute("width", card_width + projectTextWidth) // calculation made to adapt on HEX
+    cardB.setAttribute("x", x + x_shift);
+    cardB.setAttribute("y", y + (card_b_y_shift * y_factor));
+    cardB.setAttribute("width", card_width +  projectTextWidth) // calculation made to adapt on HEX
 
     /***********************************************/
     projectText.setAttribute("x", centeredX);
-    projectText.setAttribute("y", y + project_text_y_shift * y_factor);
+    projectText.setAttribute("y", y + project_text_y_shift * project_text_y_factor);
 
-    sep.setAttribute("x1", x + 5);
-    sep.setAttribute("y1", y + text_y_shift -30);
-    sep.setAttribute("x2", x + cardA.getBBox().width);
-    sep.setAttribute("y2", y + text_y_shift - 30);
+    sep.setAttribute("x1", x + x_shift +5);
+    sep.setAttribute("x2", x + x_shift + card_width -5);
+    
+    sep.setAttribute("y1", y + (text_y_shift * text_y_factor) -30);
+    sep.setAttribute("y2", y + (text_y_shift * text_y_factor) - 30);
 
-    /************* text color display handling **********************************/
+    /************* text color display + statical values handling **********************************/
+    const ids = ["min", "q1", "median", "q3", "max", "outliers", "upperfence", "lowerfence"];
     ids.forEach((value, index) => {
         const el = document.getElementById(value);
         const stat_holder = document.getElementById('stat-holder');
@@ -194,8 +190,8 @@ def show_distribution_info_card() -> str:
             el.setAttribute("fill", "#66FFFA")
         }
         
-        el.setAttribute("x", x + text_x_shift);
-        el.setAttribute("y", y + text_y_shift + text_y_margin * index);        
+        el.setAttribute("x", x + x_shift + text_x_shift);
+        el.setAttribute("y", y + (text_y_shift* text_y_factor) + text_y_margin * index);        
         });
 
     infoCard.style.visibility = "visible";
