@@ -1359,6 +1359,7 @@ class modular_graph:
                 # "xmlns": SVG_NS, # REMOVED
                 # "xmlns:xlink": XLINK_NS, # REMOVED - create_element handles namespacing the tag, ET.tostring handles declaring the namespace
                 "viewBox": f"0 0 {svg_size} {svg_size}",
+                "id" : "canevas",
                 "fill": "none",
             },
         )
@@ -1674,6 +1675,7 @@ class modular_graph:
             "text",
             {
                 "fill": "#66FFFA",
+                "id": "stat-holder",
                 "font-family": "Inter",
                 "font-size": "18",
                 "font-weight": "400",
