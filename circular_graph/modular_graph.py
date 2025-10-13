@@ -131,6 +131,13 @@ class modular_graph:
                 self.max_value = max(data.values())
             except:
                 self.max_value = 0
+        elif self.kind == "distribution":
+            try:
+                self.max_value = max(
+                    v["median"] for v in data.values() if isinstance(v, pd.Series)
+                )
+            except:
+                self.max_value = 0
         self.piscines_list = piscines_list
         self.checkpoints_list = checkpoints_list
         self.mandatory_list = mandatory_list
@@ -800,7 +807,9 @@ class modular_graph:
         obj_mandatory = name in self.mandatory_list
         is_piscine = name in self.piscines_list
         fill_color = (
-            self.COLORS["neutral"] if not isinstance(value, pd.Series) else "cyan"
+            self.COLORS["neutral"]
+            if not isinstance(value, pd.Series)
+            else value_to_color(value["median"], self.max_value, self.gradient_colors)
         )
 
         icon_radius = (
