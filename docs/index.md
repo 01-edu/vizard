@@ -8,4 +8,3 @@ This documentation helps you get started, explore examples, and consult the API 
 For the full API reference (classes, functions, and parameters) see reference.
 
 > Feel free to create some magic !
-[![Documentation](https://img.shields.io/badge/docs-online-brightgreen.svg)](https://<supermass14>.github.io/<vizard>/)
