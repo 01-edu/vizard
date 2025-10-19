@@ -3,16 +3,14 @@ from typing import Literal
 
 # Function to return the appropriate JS function based on the type of info card
 def show_info_card(type: Literal["classic", "distribution"] = "classic") -> str:
-    """
-    Returns the appropriate JS function to display info cards based on the visualization type.
+    """Return the appropriate JS function based on the visualization type.
 
     Args:
-        type (Literal["classic", "distribution"], optional): Type of visualization. Defaults to
-        "classic".
+        type (Literal["classic", "distribution"], optional): Type of visualization.
+            Defaults to "classic".
 
     Returns:
         str: JavaScript function as a string.
-
     """
 
     if type == "classic":
@@ -25,13 +23,13 @@ def show_info_card(type: Literal["classic", "distribution"] = "classic") -> str:
 
 # JS function to display 'classic' informations dynamically (project name -> number)
 def show_classic_info_card() -> str:
-    """
-    Returns a JavaScript function as a string to display classic info cards dynamically.
-    The function updates the info card's position and content based on the element's attributes.
-        Args:
-            None
-        Returns:
-           str: JavaScript function as a string.
+    """Return a JavaScript function string to display classic info cards.
+
+    The returned JS function updates the info card's position and content
+    based on the SVG element's attributes (project name, data-tooltip, cx, cy).
+
+    Returns:
+        str: JavaScript function as a string.
     """
 
     return """
@@ -88,12 +86,11 @@ def show_classic_info_card() -> str:
 
 # JS function to display distributions informations dynamically (project name -> min, q1, median, q3, max, outliers)
 def show_distribution_info_card() -> str:
-    """
-    Returns a JavaScript function as a string to display distribution info cards dynamically.
-    The function updates the info card's position and content based on the element's attributes.
+    """Return a JavaScript function string to display distribution info cards.
 
-    Args:
-        None
+    The returned JS function updates the info card's position and content
+    based on the SVG element's attributes and fills statistical fields
+    (min, q1, median, q3, max, outliers, fences).
 
     Returns:
         str: JavaScript function as a string.

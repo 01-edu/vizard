@@ -1,7 +1,7 @@
 from bs4 import BeautifulSoup as bs
 from IPython.display import display
 from IPython.display import HTML
-from .color_conversion import is_valid_hex_color_2
+from .color_conversion import is_valid_hex_color
 
 
 def create_gradient_html(
@@ -17,18 +17,13 @@ def create_gradient_html(
         end_color_hex (str): Hex code for the end color (e.g., '#EF4444').
         min_val (float or int): The minimum value for the gradient scale.
         max_val (float or int): The maximum value for the gradient scale.
-        output_filename (str, optional): The name of the HTML file to create.
-                                         Defaults to "gradient_bs_hex.html".
-        display_html (bool, optional): If True, displays the generated HTML
-                                        in the output (e.g., in a Jupyter notebook).
-                                        Defaults to False.
 
     Raises:
         ValueError: If min_val is not less than max_val or if hex codes are invalid.
         TypeError: If min_val or max_val are not numbers.
 
     Returns:
-        str: The generated HTML content as a string.
+        None: Displays the generated HTML in a Jupyter Notebook.
     """
     # --- Input Validation ---
     if not isinstance(min_val, (int, float)):
@@ -37,15 +32,15 @@ def create_gradient_html(
         raise TypeError("max_val must be a number.")
     if min_val > max_val:
         raise ValueError("min_val must be less than max_val.")
-    if not is_valid_hex_color_2(start_color_hex):
+    if not is_valid_hex_color(start_color_hex):
         raise ValueError(
             f"Invalid start_color_hex: {start_color_hex}. Must be like #RRGGBB or #RGB."
         )
-    if not is_valid_hex_color_2(mid_color_hex):
+    if not is_valid_hex_color(mid_color_hex):
         raise ValueError(
             f"Invalid mid_color_hex: {mid_color_hex}. Must be like #RRGGBB or #RGB."
         )
-    if not is_valid_hex_color_2(end_color_hex):
+    if not is_valid_hex_color(end_color_hex):
         raise ValueError(
             f"Invalid end_color_hex: {end_color_hex}. Must be like #RRGGBB or #RGB."
         )

@@ -17,14 +17,44 @@ from circular_graph.tools.renderer_utils import show_info_card
 class modular_graph:
     def __init__(
         self,
-        graph_json,
-        data,
-        piscines_list,
-        checkpoints_list,
-        mandatory_list,
-        gradient_colors=None,
+        graph_json: str,
+        data: dict | pd.Series,
+        piscines_list: list[str],
+        checkpoints_list: list[str],
+        mandatory_list: list[str],
+        gradient_colors: list[str] = None,
         kind: Literal["classic", "distribution"] = "classic",
     ):
+        """Initialize a modular_graph instance.
+
+        This constructor sets up configuration, constants and color palette,
+        parses the provided graph JSON and generates the SVG representation
+        immediately by calling render_circular_map01.
+
+        Args:
+            graph_json (str): JSON string describing the graph layout.
+            data (dict | pd.Series): Mapping of content names to numeric values
+                (for "classic") or to pandas.Series distributions (for "distribution").
+                - classic : {project : value}
+                - distribution : {project : pd.Series({'min':..,'max':..,'median':..,'q1':..,'q3':..})}
+            piscines_list (list[str]): List of  "piscines".
+            checkpoints_list (list[str]): List of checkpoints.
+            mandatory_list (list[str]): List of project names that should be rendered
+                as mandatory (star) icons.
+            gradient_colors (list[str], optional): Optional list of three hex color
+                strings [start, mid, end] to override default gradient colors.
+            kind (Literal['classic','distribution'], optional): Visualization mode.
+                "classic" treats each content as a single numeric value;
+                "distribution" expects pandas.Series values with statistical keys.
+                Defaults to "classic".
+
+        Side effects:
+            - Registers SVG namespaces.
+            - Parses `graph_json` into `self.graph_dict`.
+            - Renders informations according to the specified `kind`.
+        Returns:
+            None
+        """
         # Kind of graph
         self.kind = kind
         # defs of the svg
@@ -86,7 +116,7 @@ class modular_graph:
                 "subContentGap": 2.75,
                 "subContentRadiusOffset": 75,
             },
-            "outerCircle": {"radius": 570, "gap": self.SLICE_GAP},
+            "outerCircle": {"radius": 570, "gap": 12, "contentRadius": 5},
             "outerArc": {
                 "radius": 570,
                 "gap": 10,
@@ -158,26 +188,19 @@ class modular_graph:
 
     # * helper function to convert polar to cartesian cords
     def polar_to_cartesian(self, center_x, center_y, radius, angle_in_degrees):
-        """
-        This method converts polar coordinates
-        (center x, center y, radius, and angle in degrees)
-        to Cartesian coordinates (x, y).
-        Variables:
+        """Convert polar coordinates to Cartesian coordinates.
 
-            center_x (float): The x-coordinate of the center of the circular graph.
-            center_y (float): The y-coordinate of the center of the circular graph.
-            radius (float): The radius of the circle.
-            angle_in_degrees (float): The angle in degrees from the positive x-axis to the point on the circle.
+        Args:
+            center_x (float): X coordinate of the circle center.
+            center_y (float): Y coordinate of the circle center.
+            radius (float): Radius from the center to the point.
+            angle_in_degrees (float): Angle in degrees measured from the positive x-axis.
 
-        Return Value:
-
-            The function returns a dictionary with the following keys:
-
-            x (float): The x-coordinate of the point on the circular graph.
-            y (float): The y-coordinate of the point on the circular graph.
-            angle (float): The angle in degrees from the positive x-axis to the point on the circle.
-
-
+        Returns:
+            dict: Dictionary with keys:
+                x (float): X coordinate of the point.
+                y (float): Y coordinate of the point.
+                angle (float): The input angle in degrees.
         """
         angle_in_radians = (angle_in_degrees - 90) * math.pi / 180.0
         return {
@@ -191,26 +214,20 @@ class modular_graph:
 
     # * helper function to get arc bounding angles
     def get_arc_bounding_angles(self, arcs_types, index, gap, ref_arc, rotate):
-        """
-        This method calculates the start, end, and mid angles of an arc
+        """Compute start, end and mid angles for an arc inside a reference arc.
 
-        Variables:
+        The function distributes available angular span across entries marked as
+        'slice' (non-zero length) while treating 'line' entries as zero-length.
 
-            arcs_types (list of strings): A list of arc types, where each type is either 'slice' or 'line'.
-            index (int): The index of the arc in the arcs_types list.
-            gap (float): The angle gap between arcs in degrees.
-            ref_arc (dict): A reference arc object with the following keys:
-                startAngle (float): The start angle of the reference arc in degrees.
-                endAngle (float): The end angle of the reference arc in degrees.
-            rotate (float): The rotation angle of the arc in degrees.
+        Args:
+            arcs_types (list[str]): Sequence of 'slice'|'line' describing arc types.
+            index (int): Index of the target arc in arcs_types.
+            gap (float): Angular gap (degrees) to apply between adjacent arcs.
+            ref_arc (dict): Reference arc with 'startAngle' and 'endAngle' in degrees.
+            rotate (float): Rotation offset (degrees) to apply when ref_arc is a full circle.
 
-        Return Value:
-
-            The function returns a dictionary with the following keys:
-
-            startAngle (float): The start angle of the arc in degrees.
-            endAngle (float): The end angle of the arc in degrees.
-            midAngle (float): The mid angle of the arc in degrees.
+        Returns:
+            dict: {'startAngle': float, 'endAngle': float, 'midAngle': float}
         """
         arcs_count = len(arcs_types)
         single_arc = arcs_count == 1
@@ -260,36 +277,27 @@ class modular_graph:
         rotate=0,
         ref_arc=None,
     ):
+        """Generate SVG arc path and key points for an arc index.
+
+        Args:
+            center_coords (dict): {'x': float, 'y': float} center coordinates.
+            radius (float): Radius at which the arc lies.
+            arcs_types (list[str]): List describing each sibling arc as 'slice' or 'line'.
+            index (int): Index of the desired arc inside arcs_types.
+            reverse (bool, optional): If True, flip arc orientation for lower half. Defaults to False.
+            gap (float, optional): Angular gap between arcs in degrees. Defaults to 0.
+            rotate (float, optional): Rotation offset in degrees for circular refs. Defaults to 0.
+            ref_arc (dict, optional): Reference arc {'startAngle': float, 'endAngle': float}. If None, full circle used.
+
+        Returns:
+            dict: {
+                'path': str,         # SVG path "d" attribute
+                'start': dict,       # {'x': float, 'y': float, 'angle': float}
+                'end': dict,         # same as start
+                'middle': dict,      # mid point coords
+                'fullCircle': bool   # True if arc spans full 360°
+            }
         """
-        This method generates the coordinates for an arc based on the bounding angles
-        calculated by the get_arc_bounding_angles function.
-
-        Variables:
-
-            center_coords (dict): A dictionary with the coordinates of the circular graph center, where 'x' and 'y' are the x and y coordinates respectively.
-            radius (float): The radius of the arc.
-            arcs_types (list of strings): A list of arc types, where each type is either 'slice' or 'line'.
-            index (int): The index of the arc in the arcs_types list.
-            reverse (bool): A boolean indicating whether to reverse the arc.
-            gap (float): The angle gap between arcs in degrees.
-            rotate (float): The rotation angle of the arc in degrees.
-            ref_arc (dict): A reference arc object with the following keys:
-                startAngle (float): The start angle of the reference arc in degrees.
-                endAngle (float): The end angle of the reference arc in degrees.
-
-        Return Value:
-
-
-            The function returns a dictionary with the following keys:
-
-            path (str): The SVG path string for the arc.
-            start (dict): A dictionary with the coordinates of the arc's start point, where 'x' and 'y' are the x and y coordinates respectively.
-            end (dict): A dictionary with the coordinates of the arc's end point, where 'x' and 'y' are the x and y coordinates respectively.
-            middle (dict): A dictionary with the coordinates of the arc's mid point, where 'x' and 'y' are the x and y coordinates respectively.
-            fullCircle (bool): A boolean indicating whether the arc is a full circle.
-
-        """
-
         if ref_arc is None:
             ref_arc = {"startAngle": 0, "endAngle": 360}
 
@@ -338,16 +346,17 @@ class modular_graph:
 
     # * helper function extract content name
     def get_content_name(self, content):
-        """
-        get the content name
+        """Return a canonical content name.
 
-        as the content is either a text (single project) or dict (project with sub projects)
+        If content is a dict (representing a parent with sub-contents), the
+        first key is considered the content name. Otherwise the content is
+        converted to string.
 
-        variables:
-            content (dict or string): the content object
+        Args:
+            content (dict|str): Content descriptor.
 
-        Return Value:
-            string value indecating the content name
+        Returns:
+            str: Content name.
         """
         if isinstance(content, dict):
             return list(content.keys())[0]
@@ -358,19 +367,16 @@ class modular_graph:
 
     # * helper function create SVG element
     def create_element(self, tag, attributes=None, text_content=None, ns=None):
-        """
-        This  method creates an SVG element using the xml.etree.ElementTree (ET) module.
+        """Create an XML Element for the SVG with proper namespacing.
 
-        variables:
+        Args:
+            tag (str): Element tag name (may include 'xlink:' prefix).
+            attributes (dict, optional): Attributes to set on the element.
+            text_content (str, optional): Text content for the element.
+            ns (str, optional): Namespace URI to use for the element. Defaults to the SVG namespace.
 
-                tag (str): The name of the SVG element to create.
-                attributes (dict): A dictionary of attributes to set on the element.
-                text_content (str): The text content of the element.
-                ns (str): The namespace of the element.
-
-        Return Value:
-
-                The function returns an ET.Element object representing the created SVG element.
+        Returns:
+            xml.etree.ElementTree.Element: Newly created element with attributes and text set.
         """
         if ns is None:
             ns = self.SVG_NS
@@ -398,19 +404,19 @@ class modular_graph:
 
     # * icon rendering function star icon
     def render_star_icon(self, x, y, fill, width, name, content_name, value):
-        """
-        This method generates an SVG element representing a star icon.
+        """Render a star SVG icon group.
 
-        variables:
+        Args:
+            x (int): X coordinate (center) for icon placement.
+            y (int): Y coordinate (center) for icon placement.
+            fill (str): Fill color for the star.
+            width (int): Width used for scaling the star.
+            name (str): Element id for the star.
+            content_name (str): Human readable project/content name.
+            value (Any): Tooltip or numeric value stored on the element.
 
-            x (int): The x-coordinate of the icon.
-            y (int): The y-coordinate of the icon.
-            fill (str): The fill color of the icon.
-            width (int): The width of the icon.
-
-        return value:
-
-            The function returns an SVG element representing the star icon.
+        Returns:
+            xml.etree.ElementTree.Element: <g> group containing the star icon.
         """
         g = self.create_element(
             "g",
@@ -442,19 +448,16 @@ class modular_graph:
 
     # icon rendering function checkpoint icon
     def render_checkpoint_icon(self, x, y, fill, width):
-        """
-        This method generates an SVG element representing a checkpoint icon (flag).
+        """Render a checkpoint (flag) SVG icon group.
 
-        variables:
+        Args:
+            x (int): X coordinate (center) for icon placement.
+            y (int): Y coordinate (center) for icon placement.
+            fill (str): Fill color for the flag.
+            width (int): Width used for scaling the flag.
 
-            x (int): The x-coordinate of the icon.
-            y (int): The y-coordinate of the icon.
-            fill (str): The fill color of the icon.
-            width (int): The width of the icon.
-
-        return value:
-
-            The function returns an SVG element representing the checkpoint icon.
+        Returns:
+            xml.etree.ElementTree.Element: <g> group containing the checkpoint icon.
         """
         height_factor = width / 18 * 22
         g = self.create_element(
@@ -482,17 +485,17 @@ class modular_graph:
 
     # component rendering function text path (as an arc shape)
     def render_text_path(self, parent_group, text, id_str, index, circle_params):
-        """
-        render an SVG text path to a parent group.
+        """Render an SVG textPath that follows an arc.
 
-        Variables:
-            parent_group (SVG element): The parent group to which the text path will be appended.
-            text (str): The text to be rendered.
-            id_str (str): The id of the text path.
-            index (int): The index of the text path.
-            circle_params (dict): A dictionary containing the circle parameters.
+        Args:
+            parent_group (Element): Parent SVG group to append to.
+            text (str): Text to render along the arc.
+            id_str (str): ID to assign to the path element.
+            index (int): Index of the path (used when computing arc coords).
+            circle_params (dict): Circle configuration including radius, font settings and arcs.
 
-
+        Returns:
+            None
         """
         radius = circle_params["radius"] - (circle_params.get("nameRadiusOffset", 0))
 
@@ -550,19 +553,22 @@ class modular_graph:
         is_sub_content=False,
         content_name=None,
     ):
+        """Render content items (projects, piscines, checkpoints) onto a parent group.
+
+        The method dispatches to either classic or distribution rendering depending
+        on the graph kind.
+
+        Args:
+            parent_group (Element): SVG group element to which content will be appended.
+            content_item_data (dict|str): Content descriptor or name.
+            circle_props_from_parent (dict): Positioning and size parameters for the content.
+            object_attrs (dict, optional): Additional attributes describing the object.
+            is_sub_content (bool, optional): If True, renders as a sub-content (smaller icon). Defaults to False.
+            content_name (str, optional): Human readable name to use instead of computed name.
+
+        Returns:
+            None
         """
-        render an SVG elements for a graphical representation of content items, such as projects, exams, or piscines in the parent group
-        according to one of available kinds
-
-        Variables:
-
-            parent_group (SVG element): The parent group to which the content item will be appended.
-            content_item_data (dict): A dictionary containing the content item data.
-            circle_props_from_parent (dict): A dictionary containing the circle properties from the parent.
-            object_attrs (dict): A dictionary containing the object attributes.
-            is_sub_content (bool): A boolean indicating whether the content item is a sub-content.
-        """
-
         match self.kind:
             case "distribution":
                 self.render_distribution_content(
@@ -595,16 +601,18 @@ class modular_graph:
         is_sub_content=False,
         content_name=None,
     ):
-        """
-        render an SVG elements for classic circular graph
+        """Render a classic content node (single numeric value per project).
 
-        Variables:
+        Args:
+            parent_group (Element): SVG group to append the content to.
+            content_item_data (dict|str): Descriptor or name of the content.
+            circle_props_from_parent (dict): Circle properties (radius, angle, radii offsets).
+            object_attrs (dict, optional): Extra object attributes. Defaults to None.
+            is_sub_content (bool, optional): Whether this is a nested sub-content. Defaults to False.
+            content_name (str, optional): Optional display name override.
 
-            parent_group (SVG element): The parent group to which the content item will be appended.
-            content_item_data (dict): A dictionary containing the content item data.
-            circle_props_from_parent (dict): A dictionary containing the circle properties from the parent.
-            object_attrs (dict): A dictionary containing the object attributes.
-            is_sub_content (bool): A boolean indicating whether the content item is a sub-content.
+        Returns:
+            None
         """
 
         if object_attrs is None:
@@ -772,16 +780,22 @@ class modular_graph:
         is_sub_content=False,
         content_name=None,
     ):
-        """
-        render an SVG elements for a graphical representation of statistical distribution
+        """Render a content node representing a statistical distribution.
 
-        Variables:
+        The node expects value to be a pandas.Series with statistical keys
+        (e.g. 'min', 'q1', 'median', 'q3', 'max', 'outliers') and uses the
+        median (or other chosen statistic) to compute color.
 
-            parent_group (SVG element): The parent group to which the content item will be appended.
-            content_item_data (dict): A dictionary containing the content item data.
-            circle_props_from_parent (dict): A dictionary containing the circle properties from the parent.
-            object_attrs (dict): A dictionary containing the object attributes.
-            is_sub_content (bool): A boolean indicating whether the content item is a sub-content.
+        Args:
+            parent_group (Element): SVG group to append the content to.
+            content_item_data (dict|str): Descriptor or name of the content.
+            circle_props_from_parent (dict): Circle properties (radius, angle, radii offsets).
+            object_attrs (dict, optional): Extra object attributes. Defaults to None.
+            is_sub_content (bool, optional): Whether this is a nested sub-content. Defaults to False.
+            content_name (str, optional): Optional display name override.
+
+        Returns:
+            None
         """
 
         if object_attrs is None:
@@ -943,14 +957,15 @@ class modular_graph:
     def render_sub_contents(
         self, parent_g, content_data_with_subs, parent_circle_props
     ):
-        """
-        render an SVG elements for a graphical representation of sub_content items.
+        """Render sub-contents for a parent content item.
 
-        Variables:
-            parent_g (SVG element): The parent group element that will contain the rendered sub-contents.
-            content_data_with_subs (dict): A dictionary containing the sub-content items, where each key is a sub-content item's name and the value is a list of its sub-content items (if any).
-            parent_circle_props (dict): A dictionary containing properties of the parent circle (e.g., radius, angle).
+        Args:
+            parent_g (Element): Parent SVG group to append sub-content elements.
+            content_data_with_subs (dict): {name: [sub1, sub2, ...]} structure.
+            parent_circle_props (dict): Circle properties for the parent used to compute positions.
 
+        Returns:
+            None
         """
         name, sub_contents_list = list(content_data_with_subs.items())[0]
         ##print("### -> ",sub_contents_list)
@@ -1024,15 +1039,17 @@ class modular_graph:
     def render_arc(
         self, parent_group, section_data, circle_config_from_parent, index, id_prefix
     ):
-        """
-        render an SVG elements for a graphical representation of an arc.
+        """Render an arc section and its contents.
 
-        Variables:
-            parent_group (SVG element): The parent group element that will contain the rendered arc.
-            section_data (dict): A dictionary containing the arc's data, where each key is a property
-            circle_config_from_parent (dict): A dictionary containing properties of the parent circle
-            index (int): The index of the arc in the parent circle's arcs list
-            id_prefix (str): A prefix for the arc's id.
+        Args:
+            parent_group (Element): Parent SVG group to append arc elements.
+            section_data (dict): Section definition (name, contents, inner/outer arcs).
+            circle_config_from_parent (dict): Circle configuration inherited from parent.
+            index (int): Index of this arc within its siblings.
+            id_prefix (str): Prefix string used to build element ids.
+
+        Returns:
+            None
         """
 
         arc_id = f"{id_prefix}-arc-{index + 1}"
@@ -1127,10 +1144,16 @@ class modular_graph:
 
     # component rendering function for slice
     def render_slice(self, parent_group, slice_data, index, all_sections_types):
-        """
-        render an SVG elements for a graphical representation of a slice.
-        variables:
+        """Render a slice containing entry point, inner arc and outer arcs.
 
+        Args:
+            parent_group (Element): Parent SVG group to append slice elements.
+            slice_data (dict): Slice definition (name, innerArc, outerArcs, entryPoint).
+            index (int): Slice index among siblings.
+            all_sections_types (list[str]): Sibling types used to compute angles.
+
+        Returns:
+            None
         """
         # slice_data: { name, innerArc, outerArcs, entryPoint }
 
@@ -1726,15 +1749,17 @@ class modular_graph:
     def display_gradient_legend(
         self, start_color_hex, mid_color_hex, end_color_hex, min_val, max_val
     ):
-        """
-        Display a gradient legend .
+        """Display a gradient legend.
 
-        Variables:
-            start_color_hex (str): Hex code for the start color of the gradient.
-            mid_color_hex (str): Hex code for the middle color of the gradient.
-            end_color_hex (str): Hex code for the end color of the gradient.
-            min_val (int or float): Minimum value for the gradient scale.
-            max_val (int or float): Maximum value for the gradient scale.
+        Args:
+            start_color_hex (str): Hex code for gradient start.
+            mid_color_hex (str): Hex code for gradient midpoint.
+            end_color_hex (str): Hex code for gradient end.
+            min_val (int|float): Minimum value of the legend range.
+            max_val (int|float): Maximum value of the legend range.
+
+        Returns:
+            None
         """
         create_gradient_html(
             start_color_hex, mid_color_hex, end_color_hex, min_val, max_val
@@ -1744,8 +1769,10 @@ class modular_graph:
     ###############################################################################################################################
     # component display graph visualization
     def show(self):
-        """
-        Display the SVG graph visualization.
+        """Display the rendered SVG as HTML in an IPython environment.
+
+        Returns:
+            None
         """
         if not self.graph_svg_text:
             print("No SVG data to display.")
