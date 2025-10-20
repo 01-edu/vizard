@@ -10,7 +10,24 @@
 ## Development best practices
 - Use relative imports inside the package (e.g. `from .color_conversion import ...`) to avoid ambiguity.
 - Comment your code
-- Add docstring to your function. it is used to generate the documentation
+- Add docstring to your function, it is used to generate the documentation. The docstring must follow the `google rules`
+```python
+# Google docstring rules
+#Ex: 
+def example(a: str) -> int :
+    """convert string to integer
+
+    Args:
+        a (str): integer
+
+    Raise: (this part is not mandatory)
+        error 
+
+    Returns:
+        integer
+    """
+        
+```
 - Always format your python code *(see makefile)*
 
 ---
