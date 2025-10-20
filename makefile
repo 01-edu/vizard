@@ -41,3 +41,6 @@ get-formatting-status-file:
 clean-code: check-formatting-all get-formatting-status-all format-all
 	@echo "Code cleaned and formatted, you can commit the changes now."
 
+# --------- Serve documentation ---------
+documentation:
+	@mkdocs serve
