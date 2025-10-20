@@ -1262,6 +1262,25 @@ class modular_graph:
     ########################################################################################################################################################################
 
     def render_line_section(self, parent_group, line_data, index, all_sections_types):
+        """Render a linear section radiating from the center.
+
+        This function draws a radial line section used when a section is declared
+        as type 'line' instead of 'slice'. It performs these tasks:
+          - compute the section angle using the innerCircle as reference
+          - draw a line from LINE_CONSTANTS['startRadius'] to ['endRadius']
+          - render an optional rotated title near the line start
+          - evenly distribute contents along the line length and call render_content
+            for each content item
+
+        Args:
+            parent_group (Element): Parent SVG group to append the line and children.
+            line_data (dict): Dictionary with keys 'name' and 'contents' for the section.
+            index (int): Index of this line section among siblings.
+            all_sections_types (list[str]): Types of all sibling sections (used for angle calc).
+
+        Returns:
+            None
+        """
         # line_data: { name, contents }
         line_id = f"line-{index + 1}"
         line_g = self.create_element("g", {"id": line_id})
@@ -1519,6 +1538,15 @@ class modular_graph:
     ###############################################################################################################################
     # main function to generate info card
     def generate_info_card(self) -> ET2.Element:
+        """Return an info-card SVG element appropriate to the graph kind.
+
+        Selects and returns the prebuilt info-card group for the current
+        visualization `self.kind`.
+
+        Returns:
+            xml.etree.ElementTree.Element: An SVG <g> element that serves as the
+            interactive info card for nodes, or None if kind is unknown.
+        """
         if self.kind == "distribution":
             return self.generate_distribution_info_card()
         elif self.kind == "classic":
@@ -1531,19 +1559,19 @@ class modular_graph:
     ###############################################################################################################################
     # component generation function for info card (type=classic)
     def generate_classic_info_card(self) -> ET2.Element:
-        """<g id="info_card">
-            <g filter="url(#filter8_d_1_272)" id="card">
-                <rect fill="#9C9797" height="69" id="card_a" rx="5" width="110" x="722" y="651"></rect>
-                <rect height="card_heiht" id="card_b" rx="4.5" stroke="#656464" width="card_width" x="722.5" y="651.5"></rect>
-            </g>
+        """Create SVG elements for the 'classic' info card.
 
-            <text fill="white" font-family="Inter" font-size="12" font-weight="800" letter-spacing="0em" style="white-space: pre" xml:space="preserve">
-                <tspan id="project_name_card" x="737.535" y="666.864">project name</tspan>
-            </text>
-            <text fill="white" font-family="Inter" font-size="12" font-weight="800" letter-spacing="0em" style="white-space: pre" xml:space="preserve">
-                <tspan id="data_card" x="753.35" y="699.364">number</tspan>
-            </text>
-        </g>"""
+        The classic info card is a compact card showing:
+          - a project name (tspan#project_name_card)
+          - a single numeric data value (tspan#data_card)
+
+        The returned group is initially hidden and is intended to be positioned
+        and populated from JavaScript event handlers attached to SVG nodes.
+
+        Returns:
+            xml.etree.ElementTree.Element: The root <g id="info_card"> element
+            containing the rectangles and text tspans used by the classic card.
+        """
         card_width = 150
         card_height = 100
         info_card = self.create_element(
@@ -1626,7 +1654,21 @@ class modular_graph:
     ###############################################################################################################################
     # component generation function for info card (type=distribution)
     def generate_distribution_info_card(self) -> ET2.Element:
+        """Create SVG elements for the 'distribution' info card.
 
+        The distribution info card contains:
+          - a project title (tspan#project_name_card)
+          - a separator line (line#separator)
+          - a block of statistical tspans (ids: upperfence, lowerfence, q1,
+            median, q3, min, max, outliers) placed inside the stat-holder text group.
+
+        The group is initially hidden and is intended to be populated and
+        positioned by the JS info-card handlers when hovering distribution nodes.
+
+        Returns:
+            xml.etree.ElementTree.Element: The root <g id="info_card"> element
+            containing the distribution statistics layout.
+        """
         card_width = 200
         card_height = 290
         info_card = self.create_element(
