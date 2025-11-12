@@ -1588,10 +1588,10 @@ class modular_graph:
             "rect",
             {
                 "fill": "#66696992",
+                "data-width": card_width,
                 "height": card_height,
                 "id": "card_a",
                 "rx": "5",
-                "width": card_width,
                 "x": "722.5",
                 "y": "651.5",
             },
