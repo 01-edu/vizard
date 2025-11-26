@@ -1803,6 +1803,6 @@ class modular_graph:
             mid_color_hex=self.gradient_colors[1],
             end_color_hex=self.gradient_colors[2],
             min_val=0,
-            max_val=self.max_value,
+            max_val=int(self.max_value),
         )
         display(HTML(self.graph_svg_text))
