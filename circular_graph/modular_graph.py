@@ -1789,4 +1789,20 @@ class modular_graph:
     ###############################################################################################################################
     ###############################################################################################################################
     # component display graph visualization
+    def show(self):
+        """Display the rendered SVG as HTML in an IPython environment.
 
+        Returns:
+            None
+        """
+        if not self.graph_svg_text:
+            print("No SVG data to display.")
+            return
+        create_gradient_html(
+            self.gradient_colors[0],
+            self.gradient_colors[1],
+            self.gradient_colors[2],
+            0,
+            self.max_value,
+        )
+    # display(HTML(self.graph_svg_text))
