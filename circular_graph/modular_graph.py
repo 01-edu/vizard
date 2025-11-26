@@ -1799,10 +1799,10 @@ class modular_graph:
             print("No SVG data to display.")
             return
         create_gradient_html(
-            self.gradient_colors[0],
-            self.gradient_colors[1],
-            self.gradient_colors[2],
-            0,
-            self.max_value,
+            start_color_hex=self.gradient_colors[0],
+            mid_color_hex=self.gradient_colors[1],
+            end_color_hex=self.gradient_colors[2],
+            min_val=0,
+            max_val=self.max_value,
         )
         display(HTML(self.graph_svg_text))
