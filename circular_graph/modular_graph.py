@@ -22,7 +22,6 @@ class modular_graph:
         piscines_list: list[str],
         checkpoints_list: list[str],
         mandatory_list: list[str],
-        gradient_colors: list[str] = None,
         kind: Literal["classic", "distribution"] = "classic",
     ):
         """Initialize a modular_graph instance.
@@ -41,8 +40,6 @@ class modular_graph:
             checkpoints_list (list[str]): List of checkpoints.
             mandatory_list (list[str]): List of project names that should be rendered
                 as mandatory (star) icons.
-            gradient_colors (list[str], optional): Optional list of three hex color
-                strings [start, mid, end] to override default gradient colors.
             kind (Literal['classic','distribution'], optional): Visualization mode.
                 "classic" treats each content as a single numeric value;
                 "distribution" expects pandas.Series values with statistical keys.
@@ -60,7 +57,7 @@ class modular_graph:
         # defs of the svg
         self.svg_defs = ET2.Element("defs")
         # Color Palette
-        self.gradient_colors = gradient_colors
+        self.gradient_colors = ["#FFD700", "#32CD32", "#1E90FF"]  # yellow -> green -> blue
         self.COLORS = {
             "neutral": "#808080",  # Grey
             "neutralAlt": "#A9A9A9",  # Dark Grey
@@ -1785,27 +1782,6 @@ class modular_graph:
 
         return info_card
 
-    ###############################################################################################################################
-    ###############################################################################################################################
-    # component rendering gradient legend
-    def display_gradient_legend(
-        self, start_color_hex, mid_color_hex, end_color_hex, min_val, max_val
-    ):
-        """Display a gradient legend.
-
-        Args:
-            start_color_hex (str): Hex code for gradient start.
-            mid_color_hex (str): Hex code for gradient midpoint.
-            end_color_hex (str): Hex code for gradient end.
-            min_val (int|float): Minimum value of the legend range.
-            max_val (int|float): Maximum value of the legend range.
-
-        Returns:
-            None
-        """
-        create_gradient_html(
-            start_color_hex, mid_color_hex, end_color_hex, min_val, max_val
-        )
 
     ###############################################################################################################################
     ###############################################################################################################################
@@ -1819,4 +1795,7 @@ class modular_graph:
         if not self.graph_svg_text:
             print("No SVG data to display.")
             return
+        create_gradient_html(
+         self.gradient_colors[0], self.gradient_colors[1], self.gradient_colors[2], 0, self.max_value
+        )
         display(HTML(self.graph_svg_text))

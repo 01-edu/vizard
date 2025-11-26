@@ -108,10 +108,7 @@ def value_to_color(
     Returns:
         str: Hex color string resulting from the mapping.
     """
-    start_color = "#FFD700"  # yellow
-    mid_color = "#32CD32"  # yellow blue
-    end_color = "#1E90FF"
-    if gradient_colors and len(gradient_colors) == 3:
-        start_color, mid_color, end_color = gradient_colors
+
+    start_color, mid_color, end_color = gradient_colors
 
     return interpolate_color(value, max_value, start_color, mid_color, end_color)
