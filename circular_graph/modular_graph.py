@@ -57,7 +57,11 @@ class modular_graph:
         # defs of the svg
         self.svg_defs = ET2.Element("defs")
         # Color Palette
-        self.gradient_colors = ["#FFD700", "#32CD32", "#1E90FF"]  # yellow -> green -> blue
+        self.gradient_colors = [
+            "#FFD700",
+            "#32CD32",
+            "#1E90FF",
+        ]  # yellow -> green -> blue
         self.COLORS = {
             "neutral": "#808080",  # Grey
             "neutralAlt": "#A9A9A9",  # Dark Grey
@@ -1782,7 +1786,6 @@ class modular_graph:
 
         return info_card
 
-
     ###############################################################################################################################
     ###############################################################################################################################
     # component display graph visualization
@@ -1796,6 +1799,10 @@ class modular_graph:
             print("No SVG data to display.")
             return
         create_gradient_html(
-         self.gradient_colors[0], self.gradient_colors[1], self.gradient_colors[2], 0, self.max_value
+            self.gradient_colors[0],
+            self.gradient_colors[1],
+            self.gradient_colors[2],
+            0,
+            self.max_value,
         )
         display(HTML(self.graph_svg_text))
