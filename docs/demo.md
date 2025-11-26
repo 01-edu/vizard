@@ -1,129 +1,155 @@
 # DEMO
----
-**classic kind**
+
 ```python
-from IPython.display import display
-from IPython.display import HTML
+import requests
+import time
+from datetime import datetime
+
+def postRequest(link,headers,json):
+  go = False
+  while not go:
+    try:
+      res = requests.post(link,headers=headers,json=json)
+      go = True
+    except:
+      print("sleep time post")
+      time.sleep(60)
+      go = False
+  return res
+
+def getRequest(link,params):
+  go = False
+  while not go:
+    try:
+      res = requests.get(link,params=params)
+      go = True
+    except:
+      print("sleep time get")
+      time.sleep(60)
+      go = False
+  return res
+
+tokenRequest = getRequest(school_link+"/api/auth/token",params={"token":token})
+bearerToken = tokenRequest.json()
+headers = {"Authorization":"Bearer "+bearerToken,'Content-Type': 'application/json'}
+
+query ={"query": '''
+query get_data($ob_id: Int!){
+  module_graph:object(where:{id:{_eq:$ob_id}}){
+    graph:attrs(path:"graph")
+  }
+
+	project_path:object_child(where:{parentId:{_eq:$ob_id}}){
+    object:child{
+      name
+    }
+    path:key
+  }
+
+  module_project:object_child(where:{parentId:{_eq:$ob_id},child:{type:{_eq:"project"}}}){
+    object:child{
+      name
+    }
+    path:key
+    mandatory:attrs(path:"mandatory")
+  }
+  module_piscine:object_child(where:{parentId:{_eq:$ob_id},child:{type:{_eq:"piscine"}}}){
+    object:child{
+      name
+    }
+    path:key
+  }
+  module_checkpoints:object_child(where:{parentId:{_eq:$ob_id},child:{type:{_eq:"exam"}}}){
+    object:child{
+      name
+    }
+    path:key
+  }
+}
+
+''',
+"variables":{
+  "ob_id":[object_ID]
+  }
+
+}
+```
+```python
+data = postRequest(school_link+"/api/graphql-engine/v1/graphql",headers=headers,json=query).json()['data']
+```
+```python
 from circular_graph.modular_graph import modular_graph
 from circular_graph.tools.text_conversion import to_slug
 import pandas as pd
-import warnings
-
-display(HTML("<style>.container { width:100% !important; }</style>"))
-
-warnings.filterwarnings("ignore", category=UserWarning)
-
-start_color_2 = "#FFD700"  # yellow
-mid_color_2 = "#32CD32"  # yellow blue
-end_color_2 = "#1E90FF"  # blue
-FROM = 0
-TO = 225
-cohort_selector = ["2023-03", "2023-09", "2023-09", "2024-01"]
-module_name = 100256
-cohort_validation_and_time = pd.read_csv("datasets/cohort.csv")
-module_graph = pd.read_csv("datasets/module_graph.csv")
-piscines = pd.read_csv("datasets/piscines.csv")
-checkpoints = pd.read_csv("datasets/checkpoint.csv")
-mandatory_projects = pd.read_csv("datasets/mandatory_projects.csv")
-object_path_name = pd.read_csv("datasets/object_path_name.csv")
-project_path_dict = object_path_name.set_index("key")["path"].to_dict()
-###############################################################################################################################
-if FROM >= 0 and TO >= 0 and FROM <= TO:
-    data_validation_time = (
-        cohort_validation_and_time[
-            (cohort_validation_and_time["joined_the_module"].isin(cohort_selector))
-        ]
-    )[
-        (
-            (cohort_validation_and_time["weeks"] >= FROM)
-            & (cohort_validation_and_time["weeks"] <= TO)
-        )
-    ]
-else:
-    data_validation_time = cohort_validation_and_time[
-        (cohort_validation_and_time["joined_the_module"].isin(cohort_selector))
-    ]
-###############################################################################################################################
-data_validation_time = data_validation_time[
-    (data_validation_time["module_id"] == module_name)
-]
-graph_json = module_graph[(module_graph["module_id"] == module_name)].iat[0, 4]
-###############################################################################################################################
-piscines_list = [to_slug(p, project_path_dict) for p in list(piscines["name"])]
-checkpoints_list = [to_slug(c, project_path_dict) for c in list(checkpoints["name"])]
-mandatory_list = [
-    to_slug(p, project_path_dict) for p in list(mandatory_projects["name"])
-]
-###############################################################################################################################
-if data_validation_time.empty:
-    graph_object = modular_graph(
-        graph_json, {}, piscines_list, checkpoints_list, mandatory_list
-    )
-    print(
-        "NO DATA FOUND FOR COHORT : "
-        + " and ".join(cohort_selector)
-        + " IN THE MODULE : "
-        + str(module_name)
-    )
-    graph_object.show()
-
-else:
-    unique_pairs_2 = data_validation_time.drop_duplicates(
-        subset=["ob_key", "userId", "campusDomain"]
-    )
-    data_validation_time = (
-        unique_pairs_2.groupby("ob_key").size().reset_index(name="number_of_users")
-    )
-    if len(list(module_graph["joined_the_module"])):
-        print(
-            "THIS CIRCULAR GRAPH IS REPRESENTING DATA FOR COHORT : "
-            + " and ".join(list(module_graph["joined_the_module"]))
-        )
-
-    mapping_data_vis = data_validation_time.set_index("ob_key")[
-        "number_of_users"
-    ].to_dict()
-    graph_object = modular_graph(
-        graph_json, mapping_data_vis, piscines_list, checkpoints_list, mandatory_list
-    )
-    graph_object.display_gradient_legend(
-        start_color_2,
-        mid_color_2,
-        end_color_2,
-        min(mapping_data_vis.values()),
-        max(mapping_data_vis.values()),
-    )
-    graph_object.show()
 ```
-<img src="/images/sc_classic.png">
-
----
-**Distribution kind**
 ```python
-project_stats = pd.read_csv("datasets/project_stats.csv", index_col=[0]).set_index(
-    "project_name"
-)
-project_stats_dict = {}
-for i in project_stats.iterrows():
-    project_stats_dict[i[0]] = i[1]
-
-path_dict = object_path_name.set_index("key")["path"].to_dict()
-
-graph_obj = modular_graph(
+project_slug_dict = {}
+for project in data['project_path']:
+  project_slug_dict[project['object']['name']]= project['path']
+```
+```python
+piscines = []
+for piscine in data['module_piscine']:
+  piscines.append(piscine['object']['name'])
+```
+```python
+checkpoints=[]
+for checkpoint in data['module_checkpoints']:
+  checkpoints.append(checkpoint['object']['name'])
+```
+```python
+mandatory_projects = []
+for mandatory in data['module_project']:
+  if mandatory['mandatory']:
+    mandatory_projects.append(mandatory['object']['name'])
+```
+```python
+piscines_list = [to_slug(p, project_slug_dict) for p in list(pd.Series(piscines))]
+checkpoints_list = [to_slug(c, project_slug_dict) for c in list(pd.Series(checkpoints))]
+mandatory_list = [to_slug(p, project_slug_dict) for p in list(pd.Series(mandatory_projects))]
+```
+## Classic kind example
+```python
+from random import randrange
+from IPython.lib.security import random
+import json
+graph_json = json.dumps(data['module_graph'][0]['graph'])
+data_map = {}
+for key in project_slug_dict:
+  data_map[project_slug_dict[key]] = randrange(100)
+#--------------------------------------------------------
+g = modular_graph(
     graph_json,
-    data=project_stats_dict,
-    piscines_list=piscines_list,
-    checkpoints_list=checkpoints_list,
-    mandatory_list=mandatory_list,
+    data_map,
+    piscines_list,
+    checkpoints_list,
+    mandatory_list,
+    kind="classic",  # or "distribution", default kind is set to classic
+    g.show()
+)
+```
+## Distribution kind example
+```python
+data_map = {}
+for key in project_slug_dict:
+  data_map[project_slug_dict[key]] = pd.Series({
+        "upperfence":randrange(100),
+        "lowerfence":randrange(100),
+        "q1":randrange(100),
+        "median":randrange(100),
+        "q3":randrange(100),
+        "min":randrange(100),
+        "max":randrange(100),
+        "outliers":randrange(100)
+  })
+#---------------------------------
+g = modular_graph(
+    graph_json,
+    data_map,
+    piscines_list,
+    checkpoints_list,
+    mandatory_list,
     kind="distribution",
 )
-graph_obj.display_gradient_legend(
-    start_color_2,
-    mid_color_2,
-    end_color_2,
-    0,  # min value
-    graph_obj.max_value,  # max value
-)
-graph_obj.show()
+g.show()
 ```
-<img src="/images/sc_distribution.png">

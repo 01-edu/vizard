@@ -25,7 +25,7 @@ This module provides tools to generate circular SVG maps representing modules, p
 ## Quick installation
 
 ```bash
-uv pip install git+https://github.com/01-edu/vizard.git
+pip install git+https://github.com/01-edu/vizard.git
 ```
 
 ---
