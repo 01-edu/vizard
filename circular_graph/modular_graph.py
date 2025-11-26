@@ -1805,4 +1805,4 @@ class modular_graph:
             0,
             self.max_value,
         )
-    # display(HTML(self.graph_svg_text))
+        display(HTML(self.graph_svg_text))
