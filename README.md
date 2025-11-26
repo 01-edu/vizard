@@ -2,6 +2,10 @@
 
 Vizard is a Python package for creating and visualizing graphs. It provides tools for graph rendering making it ideal custom data visualization tasks.
 
+### Download package on your notebook
+```bash
+pip install git+https://github.com/01-edu/vizard.git
+```
 
 ### Run documentation locally
 
