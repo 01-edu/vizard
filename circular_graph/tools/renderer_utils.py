@@ -126,14 +126,14 @@ def show_custom_info_card(keys: list[str]) -> str:
 
     /*****************************/
     const card_a_x_shift = 1.0;
-    const card_a_y_shift = -295.0; 
+    const card_a_y_shift = -200.0; 
     const card_b_x_shift = 1;
-    const card_b_y_shift = -295.5;
+    const card_b_y_shift = -200.5;
     
     const project_text_x_shift = 60.465;
-    const project_text_y_shift = -270.136;
+    const project_text_y_shift = -175.136;
     const text_x_shift = 10.65;
-    const text_y_shift = -215.636;
+    const text_y_shift = -120.636;
     const text_y_margin = 28;
 
     /*******************************************/
