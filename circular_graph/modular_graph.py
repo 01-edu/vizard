@@ -586,15 +586,6 @@ class modular_graph:
             None
         """
         match self.kind:
-            case "distribution":
-                self.render_distribution_content(
-                    parent_group,
-                    content_item_data,
-                    circle_props_from_parent,
-                    object_attrs,
-                    is_sub_content,
-                    content_name,
-                )
             case "custom":
                 self.render_custom_content(
                     parent_group,
@@ -604,7 +595,7 @@ class modular_graph:
                     is_sub_content,
                     content_name,
                 )
-            case _:
+            case "classic":
                 self.render_classic_content(
                     parent_group,
                     content_item_data,
@@ -613,6 +604,8 @@ class modular_graph:
                     is_sub_content,
                     content_name,
                 )
+            case _:
+                raise ValueError(f"Unknown graph kind: {self.kind}")
 
     ################################################################################################
     ################################################################################################
