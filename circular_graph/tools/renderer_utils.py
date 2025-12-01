@@ -19,14 +19,12 @@ def show_info_card(
 
     if type == "classic":
         return show_classic_info_card()
-    elif type == "distribution":
-        return show_distribution_info_card()
     elif type == "custom":
         if keys is None:
             raise ValueError("keys parameter is required when type='custom'")
         return show_custom_info_card(keys)
     else:
-        print("Invalid visualization type")
+        raise ValueError("Invalid visualization type")
 
 
 # JS function to display 'classic' informations dynamically (project name -> number)
@@ -100,138 +98,6 @@ def show_classic_info_card() -> str:
     })(this)
     """
 
-
-# JS function to display distributions informations dynamically (project name -> min, q1, median, q3, max, outliers)
-def show_distribution_info_card() -> str:
-    """Return a JavaScript function string to display distribution info cards.
-
-    The returned JS function updates the info card's position and content
-    based on the SVG element's attributes and fills statistical fields
-    (min, q1, median, q3, max, outliers, fences).
-
-    Returns:
-        str: JavaScript function as a string.
-    """
-
-    return """
-    (function showInfoCard(el) { 
-    el.style.cursor= "pointer";
-    const infoCard = document.getElementById("info_card");
-    const cardA = document.getElementById("card_a");
-    const cardB = document.getElementById("card_b");
-
-    const projectText = document.getElementById("project_name_card");
-    const dataText = document.getElementById("data_card");
-
-    const datajson = el.getAttribute("data-tooltip") || "0";
-    const data = datajson == "0" ? "N/A": JSON.parse(datajson); 
-    const sep = document.getElementById("separator");
-
-    /*****************************/
-    const card_a_x_shift = 1.0;
-    const card_a_y_shift = -295.0;
-    const card_b_x_shift = 1;
-    const card_b_y_shift = -295.5;
-    /***********************************************************/
-    const project_text_x_shift = 60.46500000000003;
-    const project_text_y_shift = -270.13599999999997;
-    const text_x_shift = 10.649999999999977;
-    const text_y_shift = -215.63599999999997;
-    const text_y_margin = 28;
-
-    /*******************************************/
-    const x = parseFloat(el.getAttribute("cx"));
-    const y = parseFloat(el.getAttribute("cy"));
-    const projectName = el.getAttribute("project-name") || el.getAttribute("id").toLowerCase();
- 
-    /*********************************************/
-    projectText.textContent = projectName.toUpperCase();
-
-    /*********************************************/
-    const projectTextWidth = projectText.getBBox().width;
-    const base_card_width = parseFloat(cardA.getAttribute("data-width"));
-    
-    // Calculate max width needed for content
-    const ids = ["min", "q1", "median", "q3", "max", "outliers", "upperfence", "lowerfence"];
-    let maxContentWidth = projectTextWidth;
-    const stat_holder = document.getElementById('stat-holder');
-    
-    ids.forEach((value) => {
-        const testText = data && data[value] !== undefined 
-            ? `${value.charAt(0).toUpperCase() + value.slice(1)} : ${data[value]}` 
-            : `${value.charAt(0).toUpperCase() + value.slice(1)} : N/A`;
-        const tempSpan = document.createElementNS("http://www.w3.org/2000/svg", "tspan");
-        tempSpan.textContent = testText;
-        tempSpan.setAttribute("font-family", "Inter");
-        tempSpan.setAttribute("font-size", "18");
-        stat_holder.appendChild(tempSpan);
-        const contentWidth = tempSpan.getBBox().width;
-        if (contentWidth > maxContentWidth) {
-            maxContentWidth = contentWidth;
-        }
-        stat_holder.removeChild(tempSpan);
-    });
-    
-    const card_width = Math.max(base_card_width, maxContentWidth + 40);
-    const cardX = x + card_a_x_shift;
-
-    /***********************************************************/
-    const size = document.getElementById('canevas').getAttribute('viewBox').split(' ').slice(2),
-    total_width = parseFloat(size[0]),
-    total_height = parseFloat(size[1]),
-    limit_width = total_width / (1+1/5),
-    limit_height = total_height / 7,
-
-    y_factor = y <= limit_height+ 15 ? -0.15 : 1,
-    project_text_y_factor = y <= limit_height+ 15 ? -0.27 : 1,
-    text_y_factor = y <= limit_height+ 15 ? -0.55 : 1,
-
-    x_shift = x >= limit_width -15 ? (card_width - card_a_x_shift) * -1  : card_a_x_shift;
-    
-    cardA.setAttribute("x", x + x_shift);
-    cardA.setAttribute("y", y + (card_a_y_shift * y_factor));
-    cardA.setAttribute("width", card_width);
-
-    cardB.setAttribute("x", x + x_shift);
-    cardB.setAttribute("y", y + (card_b_y_shift * y_factor));
-    cardB.setAttribute("width", card_width);
-
-    /***********************************************/
-    const cardCenterX = x + x_shift + (card_width / 2);
-    
-    projectText.setAttribute("x", cardCenterX);
-    projectText.setAttribute("text-anchor", "middle");
-    projectText.setAttribute("y", y + project_text_y_shift * project_text_y_factor);
-
-    sep.setAttribute("x1", x + x_shift + 5);
-    sep.setAttribute("x2", x + x_shift + card_width - 5);
-    
-    sep.setAttribute("y1", y + (text_y_shift * text_y_factor) - 30);
-    sep.setAttribute("y2", y + (text_y_shift * text_y_factor) - 30);
-
-    /************* text color display + statical values handling **********************************/
-    ids.forEach((value, index) => {
-        const el = document.getElementById(value);
-        el.textContent = data && data[value] !== undefined 
-            ? `${value.charAt(0).toUpperCase() + value.slice(1)} : ${data[value]}` 
-            : `${value.charAt(0).toUpperCase() + value.slice(1)} : N/A`;
-        if (data[value] == undefined) {
-            el.setAttribute("fill", "grey")
-        } else {
-            el.setAttribute("fill", "#66FFFA")
-        }
-        
-        el.setAttribute("x", cardCenterX);
-        el.setAttribute("text-anchor", "middle");
-        el.setAttribute("y", y + (text_y_shift* text_y_factor) + text_y_margin * index);        
-        });
-
-    infoCard.style.visibility = "visible";
-
-    })(this)
-    """
-
-
 # JS function to display custom informations dynamically (project name -> dictionary)
 def show_custom_info_card(keys: list[str]) -> str:
     """Return a JavaScript function string to display custom info cards.
@@ -260,14 +126,14 @@ def show_custom_info_card(keys: list[str]) -> str:
 
     /*****************************/
     const card_a_x_shift = 1.0;
-    const card_a_y_shift = -295.0; 
+    const card_a_y_shift = -200.0; 
     const card_b_x_shift = 1;
-    const card_b_y_shift = -295.5;
+    const card_b_y_shift = -200.5;
     
     const project_text_x_shift = 60.465;
-    const project_text_y_shift = -270.136;
+    const project_text_y_shift = -175.136;
     const text_x_shift = 10.65;
-    const text_y_shift = -215.636;
+    const text_y_shift = -120.636;
     const text_y_margin = 28;
 
     /*******************************************/
@@ -343,10 +209,10 @@ def show_custom_info_card(keys: list[str]) -> str:
     sep.setAttribute("x1", x + x_shift +5);
     sep.setAttribute("x2", x + x_shift + card_width - 5);
     
-    sep.setAttribute("y1", y + (text_y_shift * text_y_factor) -30);
+    sep.setAttribute("y1", y + (text_y_shift * text_y_factor) - 30);
     sep.setAttribute("y2", y + (text_y_shift * text_y_factor) - 30);
 
-    /************* text color display + statical values handling **********************************/
+    /************* text color display + values handling **********************************/
     
     statHolder.textContent = "";
     

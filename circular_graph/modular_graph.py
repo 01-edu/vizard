@@ -22,7 +22,7 @@ class modular_graph:
         piscines_list: list[str],
         checkpoints_list: list[str],
         mandatory_list: list[str],
-        kind: Literal["classic", "distribution", "custom"] = "classic",
+        kind: Literal["classic", "custom"] = "classic",
     ):
         """Initialize a modular_graph instance.
 
@@ -32,18 +32,15 @@ class modular_graph:
 
         Args:
             graph_json (str): JSON string describing the graph layout.
-            data (dict | pd.Series): Mapping of content names to numeric values
-                (for "classic") or to pandas.Series distributions (for "distribution").
+            data (dict): Mapping of content names to numeric values
                 - classic : {project : value}
-                - distribution : {project : pd.Series({'min':..,'max':..,'median':..,'q1':..,'q3':..})}
                 - custom : {project : {'key1': value1, 'key2': value2, ...}}
             piscines_list (list[str]): List of  "piscines".
             checkpoints_list (list[str]): List of checkpoints.
             mandatory_list (list[str]): List of project names that should be rendered
                 as mandatory (star) icons.
-            kind (Literal['classic','distribution','custom'], optional): Visualization mode.
+            kind (Literal['classic','custom'], optional): Visualization mode.
                 "classic" treats each content as a single numeric value;
-                "distribution" expects pandas.Series values with statistical keys.
                 "custom" expects dictionary values with consistent keys.
                 Defaults to "classic".
 
@@ -163,13 +160,6 @@ class modular_graph:
         if self.kind == "classic":
             try:
                 self.max_value = max(data.values())
-            except:
-                self.max_value = 0
-        elif self.kind == "distribution":
-            try:
-                self.max_value = max(
-                    v["median"] for v in data.values() if isinstance(v, pd.Series)
-                )
             except:
                 self.max_value = 0
         elif self.kind == "custom":
@@ -596,15 +586,6 @@ class modular_graph:
             None
         """
         match self.kind:
-            case "distribution":
-                self.render_distribution_content(
-                    parent_group,
-                    content_item_data,
-                    circle_props_from_parent,
-                    object_attrs,
-                    is_sub_content,
-                    content_name,
-                )
             case "custom":
                 self.render_custom_content(
                     parent_group,
@@ -614,7 +595,7 @@ class modular_graph:
                     is_sub_content,
                     content_name,
                 )
-            case _:
+            case "classic":
                 self.render_classic_content(
                     parent_group,
                     content_item_data,
@@ -623,6 +604,8 @@ class modular_graph:
                     is_sub_content,
                     content_name,
                 )
+            case _:
+                raise ValueError(f"Unknown graph kind: {self.kind}")
 
     ################################################################################################
     ################################################################################################
@@ -804,11 +787,11 @@ class modular_graph:
             self.render_sub_contents(
                 content_group, content_item_data, circle_props_from_parent
             )
-
+    
     ################################################################################################
     ################################################################################################
-    # rendering function for statistical distribution content
-    def render_distribution_content(
+    # rendering function for custom content (project -> dictionary)
+    def render_custom_content(
         self,
         parent_group,
         content_item_data,
@@ -817,11 +800,7 @@ class modular_graph:
         is_sub_content=False,
         content_name=None,
     ):
-        """Render a content node representing a statistical distribution.
-
-        The node expects value to be a pandas.Series with statistical keys
-        (e.g. 'min', 'q1', 'median', 'q3', 'max', 'outliers') and uses the
-        median (or other chosen statistic) to compute color.
+        """Render a custom content node (dictionary value per project).
 
         Args:
             parent_group (Element): SVG group to append the content to.
@@ -839,7 +818,11 @@ class modular_graph:
             object_attrs = {}
 
         name = self.get_content_name(content_item_data)
-        value = self.data.get(name, None)
+        data_value = self.data.get(name, {})
+
+        # Use the first key's value for color scaling
+        first_key = self.keys[0] if self.keys else None
+        value_for_color = data_value.get(first_key, 0) if first_key else 0
 
         coords = self.polar_to_cartesian(
             self.CURRENT_CENTER,
@@ -854,13 +837,13 @@ class modular_graph:
         content_group = self.create_element("g", {"id": name})
         parent_group.append(content_group)
 
-        # obj_type = object_attrs.get("type", "project")
         obj_mandatory = name in self.mandatory_list
         is_piscine = name in self.piscines_list
+
         fill_color = (
             self.COLORS["neutral"]
-            if not isinstance(value, pd.Series)
-            else value_to_color(value["median"], self.max_value, self.gradient_colors)
+            if value_for_color == 0
+            else value_to_color(value_for_color, self.max_value, self.gradient_colors)
         )
 
         icon_radius = (
@@ -868,6 +851,9 @@ class modular_graph:
             if is_piscine
             else circle_props_from_parent.get("contentRadius", 4)
         )
+
+        # Serialize dictionary to JSON for tooltip
+        tooltip_data = json.dumps(data_value)
 
         if name in self.checkpoints_list:
             icon = self.render_checkpoint_icon(
@@ -882,6 +868,7 @@ class modular_graph:
             )
             content_group.append(icon)
         elif obj_mandatory:
+            # For mandatory items, we might still want to show custom info.
             icon = self.render_star_icon(
                 x,
                 y,
@@ -893,8 +880,14 @@ class modular_graph:
                 ),
                 name,
                 name if not content_name else content_name,
-                value.to_json(),
+                tooltip_data,
             )
+            # Override onpointerenter for custom kind
+            path = icon.find(f"{{http://www.w3.org/2000/svg}}path")
+            if path is not None:
+                path.set("onpointerenter", show_info_card(
+                    self.kind, self.keys if self.kind == "custom" else None
+                ))
             content_group.append(icon)
         else:
             if is_piscine:
@@ -954,7 +947,7 @@ class modular_graph:
                     "cy": str(y),
                     "id": name,
                     "project-name": name if not content_name else content_name,
-                    "data-tooltip": f"{value.to_json() if isinstance(value, pd.Series) else '{}'}",
+                    "data-tooltip": tooltip_data,
                     "onpointerenter": show_info_card(
                         self.kind, self.keys if self.kind == "custom" else None
                     ),
@@ -1586,9 +1579,7 @@ class modular_graph:
             xml.etree.ElementTree.Element: An SVG <g> element that serves as the
             interactive info card for nodes, or None if kind is unknown.
         """
-        if self.kind == "distribution":
-            return self.generate_distribution_info_card()
-        elif self.kind == "classic":
+        if self.kind == "classic":
             return self.generate_classic_info_card()
         elif self.kind == "custom":
             return self.generate_custom_info_card()
@@ -1691,161 +1682,6 @@ class modular_graph:
 
         return info_card
 
-    ###############################################################################################################################
-    ###############################################################################################################################
-    # component generation function for info card (type=distribution)
-    def generate_distribution_info_card(self) -> ET2.Element:
-        """Create SVG elements for the 'distribution' info card.
-
-        The distribution info card contains:
-          - a project title (tspan#project_name_card)
-          - a separator line (line#separator)
-          - a block of statistical tspans (ids: upperfence, lowerfence, q1,
-            median, q3, min, max, outliers) placed inside the stat-holder text group.
-
-        The group is initially hidden and is intended to be populated and
-        positioned by the JS info-card handlers when hovering distribution nodes.
-
-        Returns:
-            xml.etree.ElementTree.Element: The root <g id="info_card"> element
-            containing the distribution statistics layout.
-        """
-        card_width = 200
-        card_height = 290
-        info_card = self.create_element(
-            "g",
-            {
-                "id": "info_card",
-                "filter": "url(#filter8_d_1_272)",
-                "style": "visibility: hidden;",
-            },
-        )
-        # root.append(info_card)
-        card = self.create_element("g", {"id": "card"})
-        info_card.append(card)
-        card_a = self.create_element(
-            "rect",
-            {
-                "fill": "#66696992",
-                "height": card_height,
-                "data-width": card_width,
-                "id": "card_a",
-                "rx": "5",
-                "width": card_width,
-                "x": "722.5",
-                "y": "651.5",
-            },
-        )
-        card.append(card_a)
-        card_b = self.create_element(
-            "rect",
-            {
-                "fill": "#21212188",
-                "height": card_height,
-                "id": "card_b",
-                "rx": "4.5",
-                "stroke": "#656464",
-                "width": card_width,
-                "x": "722.5",
-                "y": "651.5",
-            },
-        )
-        card.append(card_b)
-        text1 = self.create_element(
-            "text",
-            {
-                "fill": "white",
-                "font-family": "Inter",
-                "font-size": "20",
-                "font-weight": "800",
-                "letter-spacing": "0em",
-                "style": "white-space: pre",
-                "xml:space": "preserve",
-            },
-        )
-        info_card.append(text1)
-        project_name_card = self.create_element(
-            "tspan",
-            {"id": "project_name_card", "x": "737.535", "y": "666.864"},
-            text_content="project name",
-        )
-        text1.append(project_name_card)
-
-        # line separator
-        line = self.create_element(
-            "line",
-            {
-                "id": "separator",
-                "x1": "720",
-                "x2": "920",
-                "y1": "650",
-                "y2": "650",
-                "stroke": "grey",
-                "stroke-width": "2",
-            },
-        )
-        info_card.append(line)
-
-        text2 = self.create_element(
-            "text",
-            {
-                "fill": "#66FFFA",
-                "id": "stat-holder",
-                "font-family": "Inter",
-                "font-size": "18",
-                "font-weight": "400",
-                "letter-spacing": "2px",
-                "style": "white-space: pre; color: #0e0e0e92;",
-                "xml:space": "preserve",
-            },
-        )
-        info_card.append(text2)
-
-        stats = [
-            "upperfence",
-            "lowerfence",
-            "q1",
-            "median",
-            "q3",
-            "min",
-            "max",
-            "outliers",
-        ]
-
-        x = 753.35  # x start
-        y_start = 699.364  # y start
-        y_step = 24  # y-margin between tspans
-
-        for i, label in enumerate(stats):
-            tspan = self.create_element(
-                "tspan",
-                {"id": str(label), "x": str(x), "y": str(y_start + i * y_step)},
-                text_content=label.capitalize(),
-            )
-            text2.append(tspan)
-
-        return info_card
-
-    ###############################################################################################################################
-    ###############################################################################################################################
-    # component display graph visualization
-    def show(self):
-        """Display the rendered SVG as HTML in an IPython environment.
-
-        Returns:
-            None
-        """
-        if not self.graph_svg_text:
-            print("No SVG data to display.")
-            return
-        create_gradient_html(
-            start_color_hex=self.gradient_colors[0],
-            mid_color_hex=self.gradient_colors[1],
-            end_color_hex=self.gradient_colors[2],
-            min_val=0,
-            max_val=int(self.max_value),
-        )
-        display(HTML(self.graph_svg_text))
 
     ###############################################################################################################################
     ###############################################################################################################################
@@ -1956,199 +1792,45 @@ class modular_graph:
 
         return info_card
 
-    ################################################################################################
-    ################################################################################################
-    # rendering function for custom content (project -> dictionary)
-    def render_custom_content(
-        self,
-        parent_group,
-        content_item_data,
-        circle_props_from_parent,
-        object_attrs=None,
-        is_sub_content=False,
-        content_name=None,
-    ):
-        """Render a custom content node (dictionary value per project).
-
-        Args:
-            parent_group (Element): SVG group to append the content to.
-            content_item_data (dict|str): Descriptor or name of the content.
-            circle_props_from_parent (dict): Circle properties (radius, angle, radii offsets).
-            object_attrs (dict, optional): Extra object attributes. Defaults to None.
-            is_sub_content (bool, optional): Whether this is a nested sub-content. Defaults to False.
-            content_name (str, optional): Optional display name override.
+    ###############################################################################################################################
+    ###############################################################################################################################
+    # component display graph visualization
+    def show(self):
+        """Display the rendered SVG as HTML in an IPython environment.
 
         Returns:
             None
         """
-
-        if object_attrs is None:
-            object_attrs = {}
-
-        name = self.get_content_name(content_item_data)
-        data_value = self.data.get(name, {})
-
-        # Use the first key's value for color scaling
-        first_key = self.keys[0] if self.keys else None
-        value_for_color = data_value.get(first_key, 0) if first_key else 0
-
-        coords = self.polar_to_cartesian(
-            self.CURRENT_CENTER,
-            self.CURRENT_CENTER,
-            circle_props_from_parent["radius"],
-            circle_props_from_parent["angle"],
+        if not self.graph_svg_text:
+            print("No SVG data to display.")
+            return
+        create_gradient_html(
+            start_color_hex=self.gradient_colors[0],
+            mid_color_hex=self.gradient_colors[1],
+            end_color_hex=self.gradient_colors[2],
+            min_val=0,
+            max_val=int(self.max_value),
         )
-        x, y = coords["x"], coords["y"]
+        display(HTML(self.graph_svg_text))
 
-        has_sub_contents = isinstance(content_item_data, dict)
+    ###############################################################################################################################
+    ###############################################################################################################################
+    # customization
+    def set_gradient_colors(
+        self,
+        start_color_hex: str,
+        mid_color_hex: str,
+        end_color_hex: str,
+    ) -> None:
+        """Set the gradient colors used for node coloring and the legend.
 
-        content_group = self.create_element("g", {"id": name})
-        parent_group.append(content_group)
+        Args:
+            start_color_hex (str): Hex code for the start color (e.g., '#FFD700').
+            mid_color_hex (str): Hex code for the middle color (e.g., '#32CD32').
+            end_color_hex (str): Hex code for the end color (e.g., '#1E90FF').
 
-        obj_mandatory = name in self.mandatory_list
-        is_piscine = name in self.piscines_list
-
-        fill_color = (
-            self.COLORS["neutral"]
-            if value_for_color == 0
-            else value_to_color(value_for_color, self.max_value, self.gradient_colors)
-        )
-
-        icon_radius = (
-            self.PISCINE_CONSTANTS["radius"]
-            if is_piscine
-            else circle_props_from_parent.get("contentRadius", 4)
-        )
-
-        # Serialize dictionary to JSON for tooltip
-        tooltip_data = json.dumps(data_value)
-
-        if name in self.checkpoints_list:
-            icon = self.render_checkpoint_icon(
-                x,
-                y,
-                fill_color,
-                (
-                    self.CHECKPOINT_CONSTANTS["subContentWidth"]
-                    if is_sub_content
-                    else self.CHECKPOINT_CONSTANTS["width"]
-                ),
-            )
-            content_group.append(icon)
-        elif obj_mandatory:
-            # For mandatory items, we might still want to show custom info.
-            icon = self.render_star_icon(
-                x,
-                y,
-                fill_color,
-                (
-                    self.STAR_CONSTANTS["subContentWidth"]
-                    if is_sub_content
-                    else self.STAR_CONSTANTS["width"]
-                ),
-                name,
-                name if not content_name else content_name,
-                tooltip_data,
-            )
-            # Override onpointerenter for custom kind
-            path = icon.find(f"{{http://www.w3.org/2000/svg}}path")
-            if path is not None:
-                path.set("onpointerenter", self.generate_custom_card())
-            content_group.append(icon)
-        else:
-            if is_piscine:
-                gradient = self.create_element(
-                    "radialGradient",
-                    attributes={
-                        "id": content_item_data + "_gradient",
-                        "cx": "50%",
-                        "cy": "50%",
-                        "r": "50%",
-                        "fx": "50%",
-                        "fy": "50%",
-                    },
-                )
-                gradient.append(
-                    self.create_element(
-                        "stop",
-                        attributes={
-                            "offset": "0%",
-                            "stop-color": fill_color,
-                            "stop-opacity": "1",
-                        },
-                    )
-                )
-                gradient.append(
-                    self.create_element(
-                        "stop",
-                        attributes={
-                            "offset": "40%",
-                            "stop-color": fill_color,
-                            "stop-opacity": "0.5",
-                        },
-                    )
-                )
-                gradient.append(
-                    self.create_element(
-                        "stop",
-                        attributes={
-                            "offset": "100%",
-                            "stop-color": fill_color,
-                            "stop-opacity": "0",
-                        },
-                    )
-                )
-                self.defs.append(gradient)
-
-            circle_el = self.create_element(
-                "circle",
-                {
-                    "fill": (
-                        fill_color
-                        if not is_piscine
-                        else f"url(#{content_item_data}_gradient)"
-                    ),
-                    "r": str(icon_radius),
-                    "cx": str(x),
-                    "cy": str(y),
-                    "id": name,
-                    "project-name": name if not content_name else content_name,
-                    "data-tooltip": tooltip_data,
-                    "onpointerenter": self.generate_custom_card(),
-                    "onpointerleave": 'document.getElementById("info_card").style.visibility = "hidden";',
-                },
-            )
-            content_group.append(circle_el)
-
-        # Content name text
-        name_offset = (
-            self.PISCINE_CONSTANTS["nameOffset"]
-            if is_piscine
-            else circle_props_from_parent.get("contentNameOffset", 34)
-        )
-        if not is_sub_content:
-            text_el = self.create_element(
-                "text",
-                {
-                    "x": str(x),
-                    "y": str(y + name_offset),
-                    "font-size": "12px",
-                    "text-anchor": "middle",
-                    "fill": self.COLORS["neutral"],
-                    "font-family": "IBM Plex Mono",
-                    "style": "text-transform: uppercase;",
-                },
-                text_content=name,
-            )
-            content_group.append(text_el)
-
-        if has_sub_contents:
-            self.render_sub_contents(
-                content_group, content_item_data, circle_props_from_parent
-            )
-
-    def generate_custom_card(self):
-        """Generate the JS call for the custom info card."""
-        from circular_graph.tools.renderer_utils import show_custom_info_card
-
-        return show_custom_info_card(self.keys if self.keys else [])
+        Returns:
+            None
+        """
+        self.gradient_colors = [start_color_hex, mid_color_hex, end_color_hex]
+        self.root_svg, self.graph_svg_text = self.render_circular_map01(self.graph_dict)
