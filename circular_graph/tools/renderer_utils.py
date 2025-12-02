@@ -98,6 +98,7 @@ def show_classic_info_card() -> str:
     })(this)
     """
 
+
 # JS function to display custom informations dynamically (project name -> dictionary)
 def show_custom_info_card(keys: list[str]) -> str:
     """Return a JavaScript function string to display custom info cards.

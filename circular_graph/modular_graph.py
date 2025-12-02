@@ -44,8 +44,8 @@ class modular_graph:
                 "classic" treats each content as a single numeric value;
                 "custom" expects dictionary values with consistent keys.
                 Defaults to "classic".
-            color_key (str | None, optional): For custom mode, specifies which dictionary 
-                key to use for color mapping. If None, uses the first key. Must be a valid 
+            color_key (str | None, optional): For custom mode, specifies which dictionary
+                key to use for color mapping. If None, uses the first key. Must be a valid
                 key present in all data dictionaries. Raises ValueError if invalid.
                 Defaults to None.
 
@@ -807,7 +807,7 @@ class modular_graph:
             self.render_sub_contents(
                 content_group, content_item_data, circle_props_from_parent
             )
-    
+
     ################################################################################################
     ################################################################################################
     # rendering function for custom content (project -> dictionary)
@@ -904,9 +904,12 @@ class modular_graph:
             # Override onpointerenter for custom kind
             path = icon.find(f"{{http://www.w3.org/2000/svg}}path")
             if path is not None:
-                path.set("onpointerenter", show_info_card(
-                    self.kind, self.keys if self.kind == "custom" else None
-                ))
+                path.set(
+                    "onpointerenter",
+                    show_info_card(
+                        self.kind, self.keys if self.kind == "custom" else None
+                    ),
+                )
             content_group.append(icon)
         else:
             if is_piscine:
@@ -1700,7 +1703,6 @@ class modular_graph:
         text2.append(data_card)
 
         return info_card
-
 
     ###############################################################################################################################
     ###############################################################################################################################
