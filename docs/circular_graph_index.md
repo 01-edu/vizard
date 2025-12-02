@@ -45,29 +45,45 @@ g = modular_graph(graph_json, data_map, piscines, checkpoints, mandatory, kind="
 g.show()  # displays the SVG in Jupyter
 ```
 
-For "distribution" visualization, provide `data` values as pandas.Series containing the expected statistical keys (`min`, `q1`, `median`, `q3`, `max`, `outliers`).
+For "custom" visualization with multiple metrics, provide dictionary values and optionally specify which key to use for coloring:
+
+```python
+# Custom mode with multiple metrics per project
+custom_data = {
+    "project-a": {"completion": 85, "quality": 92, "speed": 78},
+    "project-b": {"completion": 70, "quality": 88, "speed": 95},
+    "project-c": {"completion": 95, "quality": 75, "speed": 80}
+}
+
+# Default: uses first key (completion) for colors
+g1 = modular_graph(graph_json, custom_data, piscines, checkpoints, mandatory, kind="custom")
+
+# Explicit: use "quality" for colors
+g2 = modular_graph(graph_json, custom_data, piscines, checkpoints, mandatory, 
+                   kind="custom", color_key="quality")
+g2.show()
+```
 
 ---
 ## API summary
 
-- class `modular_graph(graph_json: str, data: dict|pd.Series, piscines_list: list, checkpoints_list: list, mandatory_list: list, gradient_colors: list[str]=None, kind: "classic"|"distribution"="classic")`
+- class `modular_graph(graph_json: str, data: dict, piscines_list: list, checkpoints_list: list, mandatory_list: list, kind: "classic"|"custom"="classic", color_key: str|None=None)`
   - Renders the map and exposes `graph_svg_text` (SVG string).
+  - Parameters:
+    - `graph_json` — JSON string describing the graph structure
+    - `data` — Project data (dict for classic/custom modes)
+    - `piscines_list`, `checkpoints_list`, `mandatory_list` — Project lists
+    - `kind` — Visualization mode: "classic" (single value) or "custom" (dictionary values)
+    - `color_key` — (Custom mode only) Which dictionary key to use for color mapping. Defaults to first key if not specified. Must be a valid key present in all data dictionaries.
   - Notable methods:
     - `show()` — displays the SVG in Jupyter.
-    - `display_gradient_legend(start_color_hex, mid_color_hex, end_color_hex, min_val, max_val)` — injects the legend.
+    - `set_gradient_colors(start_color_hex, mid_color_hex, end_color_hex)` — updates the color palette and re-renders the graph.
 
 - `tools.text_conversion`
   - `to_slug(text, mapping)` — slugifies or uses a mapping.
   - `replace_keys(dict, mapping)` — replaces dict keys with slugs.
 
----
-## Example graph_json (schema)
 
-The expected JSON describes sections / arcs / contents. See `circular_graph/documentation.md` for a concrete example and the full structure.
-
-[see reference here](modular_graph.md)
-<br/>
-[see Demo here](demo.md)
 ## License
 01 Data Science Team (DTF)
 
