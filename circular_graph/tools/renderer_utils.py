@@ -181,7 +181,7 @@ def show_custom_info_card(keys: list[str]) -> str:
 
     y_factor = y <= limit_height + 15 ? -0.3 : 1,
     project_text_y_factor = y <= limit_height + 15 ? -0.5 : 1,
-    text_y_factor = y <= limit_height + 15 ? -0.95 : 1,
+    text_y_factor = y <= limit_height + 15 ? -1.1 : 1,
 
     x_shift = x >= limit_width - 15 ? (card_width - card_a_x_shift) * -1  : card_a_x_shift;
     const centeredX =  x >= limit_width -15 
