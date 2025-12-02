@@ -23,6 +23,7 @@ class modular_graph:
         checkpoints_list: list[str],
         mandatory_list: list[str],
         kind: Literal["classic", "custom"] = "classic",
+        color_key: str | None = None,
     ):
         """Initialize a modular_graph instance.
 
@@ -43,6 +44,14 @@ class modular_graph:
                 "classic" treats each content as a single numeric value;
                 "custom" expects dictionary values with consistent keys.
                 Defaults to "classic".
+            color_key (str | None, optional): For custom mode, specifies which dictionary 
+                key to use for color mapping. If None, uses the first key. Must be a valid 
+                key present in all data dictionaries. Raises ValueError if invalid.
+                Defaults to None.
+
+        Raises:
+            ValueError: If color_key is specified but not found in data dictionaries,
+                or if data format is invalid for the specified kind.
 
         Side effects:
             - Registers SVG namespaces.
@@ -157,6 +166,7 @@ class modular_graph:
 
         self.data = data
         self.keys = None  # Initialize keys attribute
+        self.color_key = None  # Initialize color_key attribute
         if self.kind == "classic":
             try:
                 self.max_value = max(data.values())
@@ -176,10 +186,20 @@ class modular_graph:
                         f"Inconsistent keys in data for project '{key}'. All dictionaries must have keys: {self.keys}"
                     )
 
-            # Set max_value based on the first key
+            # Validate and set color_key
+            if color_key is not None:
+                if color_key not in self.keys:
+                    raise ValueError(
+                        f"Invalid color_key '{color_key}'. Must be one of: {self.keys}"
+                    )
+                self.color_key = color_key
+            else:
+                # Default to first key if not specified
+                self.color_key = self.keys[0]
+
+            # Set max_value based on the color_key
             try:
-                first_key = self.keys[0]
-                self.max_value = max(v[first_key] for v in data.values())
+                self.max_value = max(v[self.color_key] for v in data.values())
             except:
                 self.max_value = 0
         self.piscines_list = piscines_list
@@ -820,9 +840,8 @@ class modular_graph:
         name = self.get_content_name(content_item_data)
         data_value = self.data.get(name, {})
 
-        # Use the first key's value for color scaling
-        first_key = self.keys[0] if self.keys else None
-        value_for_color = data_value.get(first_key, 0) if first_key else 0
+        # Use the color_key's value for color scaling
+        value_for_color = data_value.get(self.color_key, 0) if self.color_key else 0
 
         coords = self.polar_to_cartesian(
             self.CURRENT_CENTER,
