@@ -17,7 +17,7 @@ setup(
         "IPython<=8.30.0",
         "beautifulsoup4<=4.12.2",
     ],
-    python_requires=">=3.8",  # Minimum Python version requirement
+    python_requires=">=3.10",  # Minimum Python version requirement
     py_modules=[
         "circular_graph.modular_graph"
     ],  # Name of the python module (single file)
