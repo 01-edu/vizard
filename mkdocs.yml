@@ -20,11 +20,11 @@ plugins:
 nav:
   - Home: index.md
   - Reference:
-      circular_graph:
-        Overview: circular_graph_index.md
-        Modular_graph: modular_graph.md
-        Color_tools: color_tools.md
-        Tools: tools.md
+      - circular_graph:
+          - Overview: circular_graph_index.md
+          - Modular Graph: modular_graph.md
+          - Color Tools: color_tools.md
+          - Tools: tools.md
   - How to contribute ?: contribution.md
   - Demo: demo.md
 
