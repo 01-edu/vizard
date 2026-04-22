@@ -16,6 +16,6 @@ dependencies:
       - mkdocs
       - mkdocs-material
       - mkdocstrings
-      - highlightjs-pygments
-      - mkdocs-search
+      - mkdocstrings-python
+      - pygments
       - mkdocs-git-revision-date-plugin
